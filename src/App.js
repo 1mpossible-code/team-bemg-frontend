@@ -2,10 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router';
 import './App.css';
 
-// Placeholder components
-const CountryList = () => <div><h2>Countries Dashboard</h2><p>Fetch and display countries here.</p></div>;
-const StateList = () => <div><h2>States List</h2><p>Filter states by country code.</p></div>;
-const CityList = () => <div><h2>Cities List</h2><p>Filter cities by state code.</p></div>;
+
+import CountryList from './components/CountryList';
+import StateList from './components/StateList';
+import CityList from './components/CityList'
 
 function App() {
   return (
