@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 const CityList = () => {
   const [cities, setCities] = useState([]);
@@ -29,6 +29,18 @@ const CityList = () => {
   return (
     <div className="container">
       <h2>Cities</h2>
+      <div className="stats-grid">
+        <div className="stat-card">
+            <span className="stat-label">Total Cities</span>
+            <span className="stat-value">{cities.length}</span>
+        </div>
+        <div className="stat-card">
+            <span className="stat-label">Total Population</span>
+            <span className="stat-value">
+            {(cities.reduce((acc, curr) => acc + (curr.population || 0), 0) / 1000000).toFixed(1)}M
+            </span>
+        </div>
+      </div>
       <table className="data-table">
         <thead>
           <tr>
