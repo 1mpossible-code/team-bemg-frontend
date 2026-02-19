@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
+const formatAttributeName = (attribute) =>
+  attribute
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+const formatCellValue = (value) => {
+  if (value === null || value === undefined || value === '') return '-';
+  if (typeof value === 'number') return value.toLocaleString();
+  return String(value);
+};
+
 const CountryList = () => {
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +37,8 @@ const CountryList = () => {
   if (loading) return <div>Loading countries...</div>;
   if (error) return <div>Error: {error}</div>;
 
+  const attributes = Object.keys(countries[0] || {});
+
   return (
     <div className="container">
       <h2>Countries</h2>
@@ -44,23 +57,31 @@ const CountryList = () => {
       <table className="data-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Code</th>
-            <th>Population</th>
+            {attributes.map((attribute) => (
+              <th key={attribute}>{formatAttributeName(attribute)}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {countries.map((country) => (
-            <tr 
-              key={country.country_code} 
-              onClick={() => navigate(`/states?country_code=${country.country_code}`)}
-              style={{ cursor: 'pointer' }}
-            >
-              <td>{country.country_name}</td>
-              <td>{country.country_code}</td>
-              <td>{country.population?.toLocaleString()}</td>
+          {countries.length === 0 ? (
+            <tr>
+              <td colSpan={attributes.length || 1}>No countries found.</td>
             </tr>
-          ))}
+          ) : (
+            countries.map((country, index) => (
+              <tr
+                key={country.country_code || index}
+                onClick={() =>
+                  country.country_code && navigate(`/states?country_code=${country.country_code}`)
+                }
+                style={{ cursor: country.country_code ? 'pointer' : 'default' }}
+              >
+                {attributes.map((attribute) => (
+                  <td key={attribute}>{formatCellValue(country[attribute])}</td>
+                ))}
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
