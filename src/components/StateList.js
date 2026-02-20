@@ -66,6 +66,9 @@ const StateList = () => {
   return (
     <div className="container">
       <h2>States</h2>
+      <p className="endpoint-badge">
+        Showing {states.length} records from states
+      </p>
       <div className="stats-grid">
         <div className="stat-card">
             <span className="stat-label">Total States</span>

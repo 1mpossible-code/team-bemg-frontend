@@ -53,6 +53,9 @@ const CityList = () => {
   return (
     <div className="container">
       <h2>Cities</h2>
+      <p className="endpoint-badge">
+        Showing {cities.length} records from cities
+      </p>
       <div className="stats-grid">
         <div className="stat-card">
             <span className="stat-label">Total Cities</span>

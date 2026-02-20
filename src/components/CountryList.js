@@ -66,6 +66,9 @@ const CountryList = () => {
   return (
     <div className="container">
       <h2>Countries</h2>
+      <p className="endpoint-badge">
+        Showing {countries.length} records from countries
+      </p>
       <div className="stats-grid">
         <div className="stat-card">
             <span className="stat-label">Total Countries</span>

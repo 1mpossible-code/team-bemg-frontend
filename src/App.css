@@ -31,8 +31,14 @@ body {
 h2 {
   font-size: 1.875rem;
   font-weight: 700;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   letter-spacing: -0.025em;
+}
+
+.endpoint-badge {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
 }
 
 /* Stats Styling */
