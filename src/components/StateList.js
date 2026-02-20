@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
+import { getStatesAll } from '../api';
 
 const formatAttributeName = (attribute) =>
   attribute
@@ -18,24 +19,47 @@ const StateList = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch('/states') 
+  const fetchData = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    getStatesAll()
       .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch data');
-        return res.json();
-      })
-      .then((data) => {
-        setStates(data);
+        setStates(res.data);
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message);
+        setError(err.response?.data?.message || err.message || 'Failed to fetch');
         setLoading(false);
       });
   }, []);
 
-  if (loading) return <div>Loading states...</div>;
-  if (error) return <div>Error: {error}</div>;
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  if (loading) {
+    return (
+      <div className="container">
+        <div className="loading-container">
+          <div className="loading-spinner" aria-hidden="true" />
+          <p>Loading states...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container">
+        <div className="error-container">
+          <p>Error: {error}</p>
+          <button className="retry-btn" type="button" onClick={fetchData}>
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const attributes = Object.keys(states[0] || {});
 

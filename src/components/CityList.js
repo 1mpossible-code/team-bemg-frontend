@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
+import { getCitiesAll } from '../api';
 
 const CityList = () => {
   const [cities, setCities] = useState([]);
@@ -7,24 +8,47 @@ const CityList = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch('/cities') 
+  const fetchData = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    getCitiesAll()
       .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch data');
-        return res.json();
-      })
-      .then((data) => {
-        setCities(data);
+        setCities(res.data);
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message);
+        setError(err.response?.data?.message || err.message || 'Failed to fetch');
         setLoading(false);
       });
   }, []);
 
-  if (loading) return <div>Loading cities...</div>;
-  if (error) return <div>Error: {error}</div>;
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  if (loading) {
+    return (
+      <div className="container">
+        <div className="loading-container">
+          <div className="loading-spinner" aria-hidden="true" />
+          <p>Loading cities...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container">
+        <div className="error-container">
+          <p>Error: {error}</p>
+          <button className="retry-btn" type="button" onClick={fetchData}>
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container">

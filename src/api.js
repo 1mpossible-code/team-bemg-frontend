@@ -13,4 +13,7 @@ export const getStates = (countryCode) =>
 export const getCities = (stateCode) =>
   API.get(`/cities?state_code=${stateCode}`);
 
+export const getStatesAll = () => API.get('/states');
+export const getCitiesAll = () => API.get('/cities');
+
 export default API;
