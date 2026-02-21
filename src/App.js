@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router';
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router';
 import './App.css';
 
 
@@ -14,9 +14,9 @@ function App() {
         <nav className="navbar">
           <h1>Geographic Database</h1>
           <ul>
-            <li><Link to="/">Countries</Link></li>
-            <li><Link to="/states">States</Link></li>
-            <li><Link to="/cities">Cities</Link></li>
+            <li><NavLink to="/" end>Countries</NavLink></li>
+            <li><NavLink to="/states">States</NavLink></li>
+            <li><NavLink to="/cities">Cities</NavLink></li>
           </ul>
         </nav>
 
