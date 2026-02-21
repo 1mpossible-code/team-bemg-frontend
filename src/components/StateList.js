@@ -65,7 +65,7 @@ const StateList = () => {
 
   return (
     <div className="container">
-      <h2>States</h2>
+      <h2>States List</h2>
       <p className="endpoint-badge">
         Showing {states.length} records from states
       </p>

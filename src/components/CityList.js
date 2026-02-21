@@ -52,7 +52,7 @@ const CityList = () => {
 
   return (
     <div className="container">
-      <h2>Cities</h2>
+      <h2>Cities List</h2>
       <p className="endpoint-badge">
         Showing {cities.length} records from cities
       </p>

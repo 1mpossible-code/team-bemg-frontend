@@ -65,7 +65,7 @@ const CountryList = () => {
 
   return (
     <div className="container">
-      <h2>Countries</h2>
+      <h2>Countries Dashboard</h2>
       <p className="endpoint-badge">
         Showing {countries.length} records from countries
       </p>
