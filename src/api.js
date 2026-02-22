@@ -5,15 +5,27 @@ const baseURL =
 
 const API = axios.create({ baseURL });
 
-export const getCountries = () => API.get('/countries');
+// Countries API
+export const getCountries = (params) => API.get('/countries', { params });
+export const getCountry = (code) => API.get(`/countries/${code}`);
+export const createCountry = (data) => API.post('/countries', data);
+export const updateCountry = (code, data) => API.put(`/countries/${code}`, data);
+export const deleteCountry = (code) => API.delete(`/countries/${code}`);
 
-export const getStates = (countryCode) =>
-  API.get(`/states?country_code=${countryCode}`);
-
-export const getCities = (stateCode) =>
-  API.get(`/cities?state_code=${stateCode}`);
-
+// States API
+export const getStates = (params) => API.get('/states', { params });
 export const getStatesAll = () => API.get('/states');
+export const getState = (code) => API.get(`/states/${code}`);
+export const createState = (data) => API.post('/states', data);
+export const updateState = (code, data) => API.put(`/states/${code}`, data);
+export const deleteState = (code) => API.delete(`/states/${code}`);
+
+// Cities API
+export const getCities = (params) => API.get('/cities', { params });
 export const getCitiesAll = () => API.get('/cities');
+export const getCity = (code) => API.get(`/cities/${code}`);
+export const createCity = (data) => API.post('/cities', data);
+export const updateCity = (code, data) => API.put(`/cities/${code}`, data);
+export const deleteCity = (code) => API.delete(`/cities/${code}`);
 
 export default API;
