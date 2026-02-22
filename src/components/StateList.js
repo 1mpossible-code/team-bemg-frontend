@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import { getStatesAll } from '../api';
+import { getStates } from '../api';
+import FilterBar from './FilterBar';
 
 const formatAttributeName = (attribute) =>
   attribute
@@ -17,12 +18,24 @@ const StateList = () => {
   const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    state_name: '',
+    country_code: '',
+    min_population: '',
+    max_population: ''
+  });
   const navigate = useNavigate();
 
-  const fetchData = useCallback(() => {
+  const fetchData = useCallback((params = {}) => {
     setLoading(true);
     setError(null);
-    getStatesAll()
+    
+    // Remove empty filters
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value !== '')
+    );
+    
+    getStates(cleanParams)
       .then((res) => {
         setStates(res.data);
         setLoading(false);
@@ -36,6 +49,24 @@ const StateList = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleFilterChange = (name, value) => {
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSearch = () => {
+    fetchData(filters);
+  };
+
+  const handleClear = () => {
+    setFilters({
+      state_name: '',
+      country_code: '',
+      min_population: '',
+      max_population: ''
+    });
+    fetchData();
+  };
 
   if (loading) {
     return (
@@ -53,7 +84,7 @@ const StateList = () => {
       <div className="container">
         <div className="error-container">
           <p>Error: {error}</p>
-          <button className="retry-btn" type="button" onClick={fetchData}>
+          <button className="retry-btn" type="button" onClick={() => fetchData()}>
             Retry
           </button>
         </div>
@@ -62,13 +93,52 @@ const StateList = () => {
   }
 
   const attributes = Object.keys(states[0] || {});
+  
+  const filterConfig = [
+    {
+      name: 'state_name',
+      label: 'State Name',
+      type: 'text',
+      value: filters.state_name,
+      placeholder: 'Search by name...'
+    },
+    {
+      name: 'country_code',
+      label: 'Country Code',
+      type: 'text',
+      value: filters.country_code,
+      placeholder: 'e.g., US'
+    },
+    {
+      name: 'min_population',
+      label: 'Min Population',
+      type: 'number',
+      value: filters.min_population,
+      placeholder: 'e.g., 100000'
+    },
+    {
+      name: 'max_population',
+      label: 'Max Population',
+      type: 'number',
+      value: filters.max_population,
+      placeholder: 'e.g., 50000000'
+    }
+  ];
 
   return (
     <div className="container">
-      <h2>States List</h2>
+      <h2>States Dashboard</h2>
       <p className="endpoint-badge">
         Showing {states.length} records from states
       </p>
+      
+      <FilterBar
+        filters={filterConfig}
+        onFilterChange={handleFilterChange}
+        onSearch={handleSearch}
+        onClear={handleClear}
+      />
+      
       <div className="stats-grid">
         <div className="stat-card">
             <span className="stat-label">Total States</span>
@@ -99,7 +169,7 @@ const StateList = () => {
               <tr
                 key={state.state_code || index}
                 onClick={() =>
-                  state.state_code && navigate(`/states?country_code=${state.state_code}`)
+                  state.state_code && navigate(`/cities?state_code=${state.state_code}`)
                 }
                 style={{ cursor: state.state_code ? 'pointer' : 'default' }}
               >

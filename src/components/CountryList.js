@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { getCountries } from '../api';
+import FilterBar from './FilterBar';
 
 const formatAttributeName = (attribute) =>
   attribute
@@ -17,12 +18,24 @@ const CountryList = () => {
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    country_name: '',
+    continent: '',
+    min_population: '',
+    max_population: ''
+  });
   const navigate = useNavigate();
 
-  const fetchData = useCallback(() => {
+  const fetchData = useCallback((params = {}) => {
     setLoading(true);
     setError(null);
-    getCountries()
+    
+    // Remove empty filters
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value !== '')
+    );
+    
+    getCountries(cleanParams)
       .then((res) => {
         setCountries(res.data);
         setLoading(false);
@@ -36,6 +49,24 @@ const CountryList = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleFilterChange = (name, value) => {
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSearch = () => {
+    fetchData(filters);
+  };
+
+  const handleClear = () => {
+    setFilters({
+      country_name: '',
+      continent: '',
+      min_population: '',
+      max_population: ''
+    });
+    fetchData();
+  };
 
   if (loading) {
     return (
@@ -53,7 +84,7 @@ const CountryList = () => {
       <div className="container">
         <div className="error-container">
           <p>Error: {error}</p>
-          <button className="retry-btn" type="button" onClick={fetchData}>
+          <button className="retry-btn" type="button" onClick={() => fetchData()}>
             Retry
           </button>
         </div>
@@ -62,6 +93,45 @@ const CountryList = () => {
   }
 
   const attributes = Object.keys(countries[0] || {});
+  
+  const filterConfig = [
+    {
+      name: 'country_name',
+      label: 'Country Name',
+      type: 'text',
+      value: filters.country_name,
+      placeholder: 'Search by name...'
+    },
+    {
+      name: 'continent',
+      label: 'Continent',
+      type: 'select',
+      value: filters.continent,
+      options: [
+        { value: 'Africa', label: 'Africa' },
+        { value: 'Asia', label: 'Asia' },
+        { value: 'Europe', label: 'Europe' },
+        { value: 'North America', label: 'North America' },
+        { value: 'South America', label: 'South America' },
+        { value: 'Oceania', label: 'Oceania' },
+        { value: 'Antarctica', label: 'Antarctica' }
+      ]
+    },
+    {
+      name: 'min_population',
+      label: 'Min Population',
+      type: 'number',
+      value: filters.min_population,
+      placeholder: 'e.g., 1000000'
+    },
+    {
+      name: 'max_population',
+      label: 'Max Population',
+      type: 'number',
+      value: filters.max_population,
+      placeholder: 'e.g., 100000000'
+    }
+  ];
 
   return (
     <div className="container">
@@ -69,6 +139,14 @@ const CountryList = () => {
       <p className="endpoint-badge">
         Showing {countries.length} records from countries
       </p>
+      
+      <FilterBar
+        filters={filterConfig}
+        onFilterChange={handleFilterChange}
+        onSearch={handleSearch}
+        onClear={handleClear}
+      />
+      
       <div className="stats-grid">
         <div className="stat-card">
             <span className="stat-label">Total Countries</span>
