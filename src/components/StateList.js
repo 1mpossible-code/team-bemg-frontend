@@ -1,7 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { getStates } from '../api';
 import FilterBar from './FilterBar';
+
+const defaultFilters = {
+  state_name: '',
+  country_code: '',
+  min_population: '',
+  max_population: ''
+};
 
 const formatAttributeName = (attribute) =>
   attribute
@@ -18,13 +25,9 @@ const StateList = () => {
   const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({
-    state_name: '',
-    country_code: '',
-    min_population: '',
-    max_population: ''
-  });
+  const [filters, setFilters] = useState(defaultFilters);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchData = useCallback((params = {}) => {
     setLoading(true);
@@ -47,8 +50,18 @@ const StateList = () => {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const countryCodeFromQuery = params.get('country_code') || '';
+
+    if (countryCodeFromQuery) {
+      const nextFilters = { ...defaultFilters, country_code: countryCodeFromQuery };
+      setFilters(nextFilters);
+      fetchData(nextFilters);
+      return;
+    }
+
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, location.search]);
 
   const handleFilterChange = (name, value) => {
     setFilters(prev => ({ ...prev, [name]: value }));
@@ -59,12 +72,7 @@ const StateList = () => {
   };
 
   const handleClear = () => {
-    setFilters({
-      state_name: '',
-      country_code: '',
-      min_population: '',
-      max_population: ''
-    });
+    setFilters(defaultFilters);
     fetchData();
   };
 
