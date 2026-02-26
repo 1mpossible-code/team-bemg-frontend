@@ -5,7 +5,8 @@ import './App.css';
 
 import CountryList from './components/CountryList';
 import StateList from './components/StateList';
-import CityList from './components/CityList'
+import CityList from './components/CityList';
+import CreateCountryForm from './components/CreateCountryForm';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <main className="content">
           <Routes>
             <Route path="/" element={<CountryList />} />
+            <Route path="/countries/create" element={<CreateCountryForm />} />
             <Route path="/states" element={<StateList />} />
             <Route path="/cities" element={<CityList />} />
           </Routes>
