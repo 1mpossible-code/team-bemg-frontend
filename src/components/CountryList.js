@@ -1,8 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { getCountries } from '../api';
 import { normalizeQueryParams } from '../utils/query';
+import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import FilterBar from './FilterBar';
+
+const defaultFilters = {
+  country_name: '',
+  continent: '',
+  min_population: '',
+  max_population: ''
+};
 
 const formatAttributeName = (attribute) =>
   attribute
@@ -19,13 +27,9 @@ const CountryList = () => {
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({
-    country_name: '',
-    continent: '',
-    min_population: '',
-    max_population: ''
-  });
+  const [filters, setFilters] = useState(defaultFilters);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchData = useCallback((params = {}) => {
     setLoading(true);
@@ -48,25 +52,32 @@ const CountryList = () => {
   }, []);
 
   useEffect(() => {
+    if (location.search) {
+      const nextFilters = parseFiltersFromSearch(
+        location.search,
+        defaultFilters
+      );
+      setFilters(nextFilters);
+      fetchData(nextFilters);
+      return;
+    }
+
+    setFilters(defaultFilters);
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, location.search]);
 
   const handleFilterChange = (name, value) => {
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSearch = () => {
-    fetchData(filters);
+    const search = buildSearchFromFilters(filters);
+    navigate({ pathname: location.pathname, search });
   };
 
   const handleClear = () => {
-    setFilters({
-      country_name: '',
-      continent: '',
-      min_population: '',
-      max_population: ''
-    });
-    fetchData();
+    setFilters(defaultFilters);
+    navigate({ pathname: location.pathname, search: '' });
   };
 
   if (loading) {

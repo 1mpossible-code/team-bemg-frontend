@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { getStates } from '../api';
 import { normalizeQueryParams } from '../utils/query';
+import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import FilterBar from './FilterBar';
 
 const defaultFilters = {
@@ -51,16 +52,17 @@ const StateList = () => {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const countryCodeFromQuery = params.get('country_code') || '';
-
-    if (countryCodeFromQuery) {
-      const nextFilters = { ...defaultFilters, country_code: countryCodeFromQuery };
+    if (location.search) {
+      const nextFilters = parseFiltersFromSearch(
+        location.search,
+        defaultFilters
+      );
       setFilters(nextFilters);
       fetchData(nextFilters);
       return;
     }
 
+    setFilters(defaultFilters);
     fetchData();
   }, [fetchData, location.search]);
 
@@ -69,12 +71,13 @@ const StateList = () => {
   };
 
   const handleSearch = () => {
-    fetchData(filters);
+    const search = buildSearchFromFilters(filters);
+    navigate({ pathname: location.pathname, search });
   };
 
   const handleClear = () => {
     setFilters(defaultFilters);
-    fetchData();
+    navigate({ pathname: location.pathname, search: '' });
   };
 
   if (loading) {

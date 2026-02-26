@@ -1,8 +1,17 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { getCities } from '../api';
 import { normalizeQueryParams } from '../utils/query';
+import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import FilterBar from './FilterBar';
+
+const defaultFilters = {
+  name: '',
+  country_code: '',
+  state_code: '',
+  min_population: '',
+  max_population: ''
+};
 
 const formatAttributeName = (attribute) =>
   attribute
@@ -19,14 +28,9 @@ const CityList = () => {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({
-    name: '',
-    country_code: '',
-    state_code: '',
-    min_population: '',
-    max_population: ''
-  });
+  const [filters, setFilters] = useState(defaultFilters);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchData = useCallback((params = {}) => {
     setLoading(true);
@@ -49,26 +53,32 @@ const CityList = () => {
   }, []);
 
   useEffect(() => {
+    if (location.search) {
+      const nextFilters = parseFiltersFromSearch(
+        location.search,
+        defaultFilters
+      );
+      setFilters(nextFilters);
+      fetchData(nextFilters);
+      return;
+    }
+
+    setFilters(defaultFilters);
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, location.search]);
 
   const handleFilterChange = (name, value) => {
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSearch = () => {
-    fetchData(filters);
+    const search = buildSearchFromFilters(filters);
+    navigate({ pathname: location.pathname, search });
   };
 
   const handleClear = () => {
-    setFilters({
-      name: '',
-      country_code: '',
-      state_code: '',
-      min_population: '',
-      max_population: ''
-    });
-    fetchData();
+    setFilters(defaultFilters);
+    navigate({ pathname: location.pathname, search: '' });
   };
 
   if (loading) {
