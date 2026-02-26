@@ -147,7 +147,16 @@ const CountryList = () => {
 
   return (
     <div className="container">
-      <h2>Countries Dashboard</h2>
+      <div className="list-header">
+        <h2>Countries Dashboard</h2>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => navigate('/countries/create')}
+        >
+          Create Country
+        </button>
+      </div>
       <p className="endpoint-badge">
         Showing {countries.length} records from countries
       </p>
