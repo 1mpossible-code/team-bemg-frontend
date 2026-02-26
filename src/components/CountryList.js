@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { getCountries } from '../api';
+import { normalizeQueryParams } from '../utils/query';
 import FilterBar from './FilterBar';
 
 const formatAttributeName = (attribute) =>
@@ -30,10 +31,10 @@ const CountryList = () => {
     setLoading(true);
     setError(null);
     
-    // Remove empty filters
-    const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value !== '')
-    );
+    const cleanParams = normalizeQueryParams(params, [
+      'min_population',
+      'max_population'
+    ]);
     
     getCountries(cleanParams)
       .then((res) => {
