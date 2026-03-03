@@ -19,6 +19,8 @@ const initialForm = {
   capital: '',
   population: '',
   area_km2: '',
+  latitude: '',
+  longitude: '',
 };
 
 const CreateCountryForm = () => {
@@ -41,6 +43,8 @@ const CreateCountryForm = () => {
       ...form,
       population: form.population !== '' ? Number(form.population) : undefined,
       area_km2: form.area_km2 !== '' ? Number(form.area_km2) : undefined,
+      latitude: form.latitude !== '' ? Number(form.latitude) : undefined,
+      longitude: form.longitude !== '' ? Number(form.longitude) : undefined,
     };
 
     createCountry(payload)
@@ -146,6 +150,36 @@ const CreateCountryForm = () => {
             value={form.area_km2}
             onChange={handleChange}
             placeholder="e.g., 9833517"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="latitude">Latitude</label>
+          <input
+            id="latitude"
+            name="latitude"
+            type="number"
+            step="any"
+            min="-90"
+            max="90"
+            value={form.latitude}
+            onChange={handleChange}
+            placeholder="e.g., 38.8951"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="longitude">Longitude</label>
+          <input
+            id="longitude"
+            name="longitude"
+            type="number"
+            step="any"
+            min="-180"
+            max="180"
+            value={form.longitude}
+            onChange={handleChange}
+            placeholder="e.g., -77.0364"
           />
         </div>
 

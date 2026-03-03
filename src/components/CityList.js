@@ -18,9 +18,23 @@ const formatAttributeName = (attribute) =>
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
-const formatCellValue = (value) => {
+const COORDINATE_FIELDS = new Set(['latitude', 'longitude', 'lat', 'lng']);
+
+const formatCellValue = (value, key) => {
   if (value === null || value === undefined || value === '') return '-';
-  if (typeof value === 'number') return value.toLocaleString();
+  if (typeof value === 'object' && value !== null) {
+    if (key === 'coordinates') {
+      const lat = value.latitude ?? value.lat;
+      const lng = value.longitude ?? value.lng;
+      if (lat != null && lng != null) return `${lat}, ${lng}`;
+      return '-';
+    }
+    return JSON.stringify(value);
+  }
+  if (typeof value === 'number') {
+    if (COORDINATE_FIELDS.has(key)) return String(value);
+    return value.toLocaleString();
+  }
   return String(value);
 };
 
@@ -201,7 +215,7 @@ const CityList = () => {
                 style={{ cursor: 'pointer' }}
               >
                 {attributes.map((attribute) => (
-                  <td key={attribute}>{formatCellValue(city[attribute])}</td>
+                  <td key={attribute}>{formatCellValue(city[attribute], attribute)}</td>
                 ))}
               </tr>
             ))
