@@ -23,9 +23,12 @@ export const deleteState = (code) => API.delete(`/states/${code}`);
 // Cities API
 export const getCities = (params) => API.get('/cities', { params });
 export const getCitiesAll = () => API.get('/cities');
-export const getCity = (code) => API.get(`/cities/${code}`);
+export const getCity = (stateCode, cityName) =>
+  API.get(`/cities/${stateCode}/${cityName}`);
 export const createCity = (data) => API.post('/cities', data);
-export const updateCity = (code, data) => API.put(`/cities/${code}`, data);
-export const deleteCity = (code) => API.delete(`/cities/${code}`);
+export const updateCity = (stateCode, cityName, data) =>
+  API.put(`/cities/${stateCode}/${cityName}`, data);
+export const deleteCity = (stateCode, cityName) =>
+  API.delete(`/cities/${stateCode}/${cityName}`);
 
 export default API;

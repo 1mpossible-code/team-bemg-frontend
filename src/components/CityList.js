@@ -210,9 +210,7 @@ const CityList = () => {
           ) : (
             cities.map((city, index) => (
               <tr
-                key={city.city_code || index}
-                onClick={() => navigate(`/cities/${city.city_code}`)}
-                style={{ cursor: 'pointer' }}
+                key={city.city_name && city.state_code ? `${city.state_code}-${city.city_name}` : index}
               >
                 {attributes.map((attribute) => (
                   <td key={attribute}>{formatCellValue(city[attribute], attribute)}</td>
