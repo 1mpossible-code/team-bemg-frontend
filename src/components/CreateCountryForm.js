@@ -23,19 +23,58 @@ const initialForm = {
 
 const CreateCountryForm = () => {
   const [form, setForm] = useState(initialForm);
+  const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const validate = () => {
+    const newErrors = {};
+
+    if (!form.country_name.trim()) {
+      newErrors.country_name = "Country name is required";
+    }
+    if (!form.country_code.trim()) {
+      newErrors.country_code = "Country code is required";
+    }
+    if (!form.continent.trim()) {
+      newErrors.continent = "Continent is required";
+    }
+    if (!form.capital.trim()) {
+      newErrors.capital = "Capital is required";
+    }
+    if (!form.population.trim()) {
+      newErrors.population = "Population is required";
+    }
+    if (!form.area_km2.trim()) {
+      newErrors.area_km2 = "Area is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+
+    setErrors((prev) => {
+      if (!prev[name]) return prev;
+      const copy = { ...prev };
+      delete copy[name];
+      return copy;
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitting(true);
     setError(null);
+
+    if (!validate()) {
+      return;
+    }
+
+    setSubmitting(true);
 
     const payload = {
       ...form,
@@ -63,11 +102,6 @@ const CreateCountryForm = () => {
         <h2>Create Country</h2>
 
         <form className="create-form" onSubmit={handleSubmit}>
-        {error && (
-          <div className="form-error">
-            {error}
-          </div>
-        )}
 
         <div className="form-group">
           <label htmlFor="country_name">Country Name</label>
@@ -78,8 +112,14 @@ const CreateCountryForm = () => {
             value={form.country_name}
             onChange={handleChange}
             placeholder="e.g., United States"
-            required
+            aria-invalid={!!errors.country_name}
+            aria-describedby={errors.country_name ? "country_name-error" : undefined}
           />
+          {errors.country_name && (
+            <p id="country_name-error" className="field-error">
+              {errors.country_name}
+            </p>
+          )}
         </div>
 
         <div className="form-group">
@@ -91,8 +131,14 @@ const CreateCountryForm = () => {
             value={form.country_code}
             onChange={handleChange}
             placeholder="e.g., US"
-            required
+            aria-invalid={!!errors.country_code}
+            aria-describedby={errors.country_code ? "country_code-error" : undefined}
           />
+          {errors.country_code && (
+            <p id="country_code-error" className="field-error">
+              {errors.country_code}
+            </p>
+          )}
         </div>
 
         <div className="form-group">
@@ -102,13 +148,19 @@ const CreateCountryForm = () => {
             name="continent"
             value={form.continent}
             onChange={handleChange}
-            required
+            aria-invalid={!!errors.continent}
+            aria-describedby={errors.continent ? "continent-error" : undefined}
           >
             <option value="">Select a continent</option>
             {CONTINENT_OPTIONS.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
+          {errors.continent && (
+            <p id="continent-error" className="field-error">
+              {errors.continent}
+            </p>
+          )}
         </div>
 
         <div className="form-group">
@@ -120,7 +172,14 @@ const CreateCountryForm = () => {
             value={form.capital}
             onChange={handleChange}
             placeholder="e.g., Washington D.C."
+            aria-invalid={!!errors.capital}
+            aria-describedby={errors.capital ? "capital-error" : undefined}
           />
+          {errors.capital && (
+            <p id="capital-error" className="field-error">
+              {errors.capital}
+            </p>
+          )}
         </div>
 
         <div className="form-group">
@@ -133,7 +192,14 @@ const CreateCountryForm = () => {
             value={form.population}
             onChange={handleChange}
             placeholder="e.g., 331000000"
+            aria-invalid={!!errors.population}
+            aria-describedby={errors.population ? "population-error" : undefined}
           />
+          {errors.population && (
+            <p id="population-error" className="field-error">
+              {errors.population}
+            </p>
+          )}
         </div>
 
         <div className="form-group">
@@ -146,7 +212,14 @@ const CreateCountryForm = () => {
             value={form.area_km2}
             onChange={handleChange}
             placeholder="e.g., 9833517"
+            aria-invalid={!!errors.area_km2}
+            aria-describedby={errors.area_km2 ? "area_km2-error" : undefined}
           />
+          {errors.area_km2 && (
+            <p id="area_km2-error" className="field-error">
+              {errors.area_km2}
+            </p>
+          )}
         </div>
 
         <div className="form-actions">
