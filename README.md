@@ -31,17 +31,33 @@ npm install
 
 ### Running the App
 
+Use the helper scripts to start the app with the correct API target:
+
 ```bash
-npm start
+./run-local.sh   # uses http://localhost:5000
+./run-cloud.sh   # edit script with your cloud API URL
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-### Environment Variables
+### Optional: `.env` configuration
 
-Create a `.env` file to configure the API endpoint:
+If you prefer using environment variables directly, create a `.env` file:
+
 ```
 REACT_APP_API_BASE_URL=http://localhost:5000
+```
+
+For cloud:
+
+```
+REACT_APP_API_BASE_URL=https://your-api.example.com
+```
+
+Then start the app:
+
+```bash
+npm start
 ```
 
 ## Available Filters
