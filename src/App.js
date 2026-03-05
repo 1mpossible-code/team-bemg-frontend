@@ -7,6 +7,7 @@ import CountryList from './components/CountryList';
 import StateList from './components/StateList';
 import CityList from './components/CityList';
 import CreateCountryForm from './components/CreateCountryForm';
+import CreateStateForm from './components/CreateStateForm';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/" element={<CountryList />} />
             <Route path="/countries/create" element={<CreateCountryForm />} />
             <Route path="/states" element={<StateList />} />
+            <Route path="/states/create" element={<CreateStateForm />} />
             <Route path="/cities" element={<CityList />} />
           </Routes>
         </main>

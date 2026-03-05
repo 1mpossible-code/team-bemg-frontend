@@ -135,7 +135,16 @@ const StateList = () => {
 
   return (
     <div className="container">
-      <h2>States Dashboard</h2>
+      <div className="list-header">
+        <h2>States Dashboard</h2>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => navigate('/states/create')}
+        >
+          Create State
+        </button>
+      </div>
       <p className="endpoint-badge">
         Showing {states.length} records from states
       </p>
