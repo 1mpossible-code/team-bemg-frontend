@@ -80,7 +80,7 @@ body {
 
 .container {
   max-width: 1100px;
-  margin: 40px auto;
+  margin: 20px auto;
   padding: 0 20px;
 }
 
@@ -316,7 +316,7 @@ h2 {
 /* List header with title + action button */
 .list-header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   margin-bottom: 0;
 }

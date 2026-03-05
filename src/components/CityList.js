@@ -146,7 +146,16 @@ const CityList = () => {
 
   return (
     <div className="container">
-      <h2>Cities Dashboard</h2>
+      <div className="list-header">
+        <h2>Cities Dashboard</h2>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => navigate('/cities/create')}
+        >
+          Create City
+        </button>
+      </div>
       <p className="endpoint-badge">
         Showing {cities.length} records from cities
       </p>

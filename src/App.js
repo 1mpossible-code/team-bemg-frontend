@@ -8,6 +8,7 @@ import StateList from './components/StateList';
 import CityList from './components/CityList';
 import CreateCountryForm from './components/CreateCountryForm';
 import CreateStateForm from './components/CreateStateForm';
+import CreateCityForm from './components/CreateCityForm';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="/states" element={<StateList />} />
             <Route path="/states/create" element={<CreateStateForm />} />
             <Route path="/cities" element={<CityList />} />
+            <Route path="/cities/create" element={<CreateCityForm />} />
           </Routes>
         </main>
       </div>
