@@ -1,7 +1,11 @@
 import axios from 'axios';
 
-const baseURL =
-  process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:3000/';
+const baseURL = process.env.REACT_APP_API_BASE_URL
+
+if (typeof process.env.REACT_APP_API_BASE_URL === 'undefined') {
+  // Handle the missing variable case
+  throw new Error("Missing env REACT_APP_API_BASE_URL, please check .env configuration");
+}
 
 const API = axios.create({ baseURL });
 

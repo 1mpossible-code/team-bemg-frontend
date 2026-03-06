@@ -101,6 +101,12 @@ const CreateCountryForm = () => {
       <div className="create-form-wrapper">
         <h2>Create Country</h2>
 
+        {error && (
+          <p className="field-error" role="alert">
+            {error}
+          </p>
+        )}
+
         <form className="create-form" onSubmit={handleSubmit}>
 
         <div className="form-group">

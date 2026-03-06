@@ -21,7 +21,7 @@ A React-based frontend for the Geographic Database API, providing an intuitive i
 
 ### Prerequisites
 - Node.js (v14 or higher)
-- Running instance of the Geographic Database API (default: http://localhost:5000)
+- Running instance of the Geographic Database API (default local: http://127.0.0.1:8000)
 
 ### Installation
 
@@ -31,33 +31,46 @@ npm install
 
 ### Running the App
 
-Use the helper scripts to start the app with the correct API target:
+Use Make targets (recommended):
 
 ```bash
-./run-local.sh   # uses http://localhost:5000
-./run-cloud.sh   # edit script with your cloud API URL
+make run-local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Starts the frontend in local mode
+- Calls the local backend directly at `http://127.0.0.1:8000` (from `run-local.sh`)
+- Open [http://localhost:3000](http://localhost:3000)
+
+```bash
+make run-cloud
+```
+
+- Starts the frontend against the hosted API configured in `run-cloud.sh`
+- Useful when your local backend is not running
+
+You can still run scripts directly if needed:
+
+```bash
+sh ./run-local.sh
+sh ./run-cloud.sh
+```
 
 ### Optional: `.env` configuration
 
-If you prefer using environment variables directly, create a `.env` file:
-
-```
-REACT_APP_API_BASE_URL=http://localhost:5000
-```
-
-For cloud:
-
-```
-REACT_APP_API_BASE_URL=https://your-api.example.com
-```
-
-Then start the app:
+If you prefer not to use `make run-local` / `make run-cloud`, you can set env vars manually and run:
 
 ```bash
 npm start
+```
+
+Examples:
+
+```bash
+# local (direct backend calls)
+REACT_APP_API_BASE_URL=http://127.0.0.1:8000/
+
+# cloud (direct API calls)
+REACT_APP_API_BASE_URL=https://your-api.example.com
 ```
 
 ## Available Filters

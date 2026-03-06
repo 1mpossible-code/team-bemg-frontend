@@ -1,10 +1,10 @@
-.PHONY: install dev build test test-watch test-coverage lint clean nuke push
+.PHONY: install dev build test test-watch test-coverage lint clean nuke push run-cloud run-local
 
 ## Install dependencies
 install:
 	npm install
 
-## Start dev server (proxies API to localhost:5000)
+## Start dev server
 dev:
 	npm run start
 
@@ -37,3 +37,8 @@ nuke: clean
 	rm -rf node_modules package-lock.json bun.lock
 	npm install
 
+run-cloud:
+	sh ./run-cloud.sh
+
+run-local:
+	sh ./run-local.sh
