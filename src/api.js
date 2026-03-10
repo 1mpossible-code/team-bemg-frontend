@@ -8,11 +8,13 @@ if (typeof process.env.REACT_APP_API_BASE_URL === 'undefined') {
 }
 
 const API = axios.create({ baseURL });
+const REQUEST_TIMEOUT_MS = 10000;
 
 // Countries API
 export const getCountries = (params) => API.get('/countries', { params });
 export const getCountry = (code) => API.get(`/countries/${code}`);
-export const createCountry = (data) => API.post('/countries', data);
+export const createCountry = (data) =>
+  API.post('/countries', data, { timeout: REQUEST_TIMEOUT_MS });
 export const updateCountry = (code, data) => API.put(`/countries/${code}`, data);
 export const deleteCountry = (code) => API.delete(`/countries/${code}`);
 

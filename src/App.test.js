@@ -24,8 +24,8 @@ const mockCities = [
 beforeEach(() => {
   // Mock all API functions to return resolved promises
   api.getCountries.mockResolvedValue({ data: mockCountries });
-  api.getStatesAll.mockResolvedValue({ data: mockStates });
-  api.getCitiesAll.mockResolvedValue({ data: mockCities });
+  api.getStates.mockResolvedValue({ data: mockStates });
+  api.getCities.mockResolvedValue({ data: mockCities });
 });
 
 afterEach(() => {
@@ -57,7 +57,7 @@ test('navigates to States and shows list', async () => {
   render(<App />);
   await userEvent.click(screen.getByRole('link', { name: /states/i }));
   await waitFor(() => {
-    expect(screen.getByText(/^States List$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^States Dashboard$/i)).toBeInTheDocument();
   });
 });
 
@@ -65,6 +65,6 @@ test('navigates to Cities and shows list', async () => {
   render(<App />);
   await userEvent.click(screen.getByRole('link', { name: /cities/i }));
   await waitFor(() => {
-    expect(screen.getByText(/^Cities List$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Cities Dashboard$/i)).toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { createCountry } from '../api';
+import { createCountry, getCountry } from '../api';
 
 const CONTINENT_OPTIONS = [
   'Africa',
@@ -21,33 +21,60 @@ const initialForm = {
   area_km2: '',
 };
 
+const COUNTRY_CODE_REGEX = /^[A-Za-z]{2,3}$/;
+const REDIRECT_DELAY_MS = 600;
+
 const CreateCountryForm = () => {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const redirectTimeoutRef = useRef(null);
   const navigate = useNavigate();
 
-  const validate = () => {
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const getErrorMessage = (err) => {
+    if (err?.code === 'ECONNABORTED') {
+      return 'Request timed out. Please try again.';
+    }
+
+    return err?.response?.data?.message || err?.message || 'Failed to create country';
+  };
+
+  const validate = (formValues) => {
     const newErrors = {};
 
-    if (!form.country_name.trim()) {
+    if (!formValues.country_name.trim()) {
       newErrors.country_name = "Country name is required";
     }
-    if (!form.country_code.trim()) {
+    if (!formValues.country_code.trim()) {
       newErrors.country_code = "Country code is required";
+    } else if (!COUNTRY_CODE_REGEX.test(formValues.country_code.trim())) {
+      newErrors.country_code = "Country code must be 2-3 alphabetical letters";
     }
-    if (!form.continent.trim()) {
+    if (!formValues.continent.trim()) {
       newErrors.continent = "Continent is required";
     }
-    if (!form.capital.trim()) {
+    if (!formValues.capital.trim()) {
       newErrors.capital = "Capital is required";
     }
-    if (!form.population.trim()) {
+    if (!formValues.population.trim()) {
       newErrors.population = "Population is required";
+    } else if (Number.isNaN(Number(formValues.population)) || Number(formValues.population) < 0) {
+      newErrors.population = "Population must be a non-negative number";
     }
-    if (!form.area_km2.trim()) {
+    if (!formValues.area_km2.trim()) {
       newErrors.area_km2 = "Area is required";
+    } else if (Number.isNaN(Number(formValues.area_km2)) || Number(formValues.area_km2) < 0) {
+      newErrors.area_km2 = "Area must be a non-negative number";
     }
 
     setErrors(newErrors);
@@ -55,8 +82,10 @@ const CreateCountryForm = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    const value = name === 'country_code' ? e.target.value.toUpperCase() : e.target.value;
     setForm((prev) => ({ ...prev, [name]: value }));
+    setSuccess(null);
 
     setErrors((prev) => {
       if (!prev[name]) return prev;
@@ -66,30 +95,64 @@ const CreateCountryForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
 
-    if (!validate()) {
+    if (submitting) {
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+
+    const normalizedForm = {
+      ...form,
+      country_name: form.country_name.trim(),
+      country_code: form.country_code.trim().toUpperCase(),
+      continent: form.continent.trim(),
+      capital: form.capital.trim(),
+      population: form.population.trim(),
+      area_km2: form.area_km2.trim(),
+    };
+
+    setForm(normalizedForm);
+
+    if (!validate(normalizedForm)) {
       return;
     }
 
     setSubmitting(true);
 
-    const payload = {
-      ...form,
-      population: form.population !== '' ? Number(form.population) : undefined,
-      area_km2: form.area_km2 !== '' ? Number(form.area_km2) : undefined,
-    };
+    try {
+      try {
+        await getCountry(normalizedForm.country_code);
+        setErrors((prev) => ({
+          ...prev,
+          country_code: 'Country code already exists',
+        }));
+        return;
+      } catch (lookupErr) {
+        if (lookupErr?.response?.status && lookupErr.response.status !== 404) {
+          throw lookupErr;
+        }
+      }
 
-    createCountry(payload)
-      .then(() => {
+      const payload = {
+        ...normalizedForm,
+        population: normalizedForm.population !== '' ? Number(normalizedForm.population) : undefined,
+        area_km2: normalizedForm.area_km2 !== '' ? Number(normalizedForm.area_km2) : undefined,
+      };
+
+      await createCountry(payload);
+      setSuccess('Country created successfully. Redirecting...');
+      redirectTimeoutRef.current = setTimeout(() => {
         navigate('/');
-      })
-      .catch((err) => {
-        setError(err.response?.data?.message || err.message || 'Failed to create country');
-        setSubmitting(false);
-      });
+      }, REDIRECT_DELAY_MS);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -104,6 +167,12 @@ const CreateCountryForm = () => {
         {error && (
           <p className="field-error" role="alert">
             {error}
+          </p>
+        )}
+
+        {success && (
+          <p className="field-success" role="status">
+            {success}
           </p>
         )}
 

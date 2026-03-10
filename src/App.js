@@ -9,6 +9,7 @@ import CityList from './components/CityList';
 import CreateCountryForm from './components/CreateCountryForm';
 import CreateStateForm from './components/CreateStateForm';
 import CreateCityForm from './components/CreateCityForm';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
@@ -24,14 +25,16 @@ function App() {
         </nav>
 
         <main className="content">
-          <Routes>
-            <Route path="/" element={<CountryList />} />
-            <Route path="/countries/create" element={<CreateCountryForm />} />
-            <Route path="/states" element={<StateList />} />
-            <Route path="/states/create" element={<CreateStateForm />} />
-            <Route path="/cities" element={<CityList />} />
-            <Route path="/cities/create" element={<CreateCityForm />} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/" element={<CountryList />} />
+              <Route path="/countries/create" element={<CreateCountryForm />} />
+              <Route path="/states" element={<StateList />} />
+              <Route path="/states/create" element={<CreateStateForm />} />
+              <Route path="/cities" element={<CityList />} />
+              <Route path="/cities/create" element={<CreateCityForm />} />
+            </Routes>
+          </ErrorBoundary>
         </main>
       </div>
     </Router>
