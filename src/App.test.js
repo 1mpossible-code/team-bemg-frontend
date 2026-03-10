@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import * as api from './api';
@@ -22,31 +22,40 @@ const mockCities = [
 ];
 
 beforeEach(() => {
-  // Mock all API functions to return resolved promises
-  api.getCountries.mockResolvedValue({ data: mockCountries });
-  api.getStates.mockResolvedValue({ data: mockStates });
-  api.getCities.mockResolvedValue({ data: mockCities });
+  api.getCountries.mockImplementation(() => new Promise(() => {}));
+  api.getStates.mockImplementation(() => new Promise(() => {}));
+  api.getCities.mockImplementation(() => new Promise(() => {}));
 });
 
-afterEach(() => {
+afterEach(async () => {
+  await act(async () => {
+    await Promise.resolve();
+  });
   jest.clearAllMocks();
 });
 
-test('renders app title', () => {
-  render(<App />);
+const renderApp = async () => {
+  await act(async () => {
+    render(<App />);
+  });
+};
+
+test('renders app title', async () => {
+  await renderApp();
   const heading = screen.getByText(/Geographic Database/i);
   expect(heading).toBeInTheDocument();
 });
 
-test('renders nav links', () => {
-  render(<App />);
+test('renders nav links', async () => {
+  await renderApp();
   expect(screen.getByRole('link', { name: /countries/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /states/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /cities/i })).toBeInTheDocument();
 });
 
 test('navigates to Countries and shows dashboard', async () => {
-  render(<App />);
+  api.getCountries.mockResolvedValue({ data: mockCountries });
+  await renderApp();
   await userEvent.click(screen.getByRole('link', { name: /countries/i }));
   await waitFor(() => {
     expect(screen.getByText(/^Countries Dashboard$/i)).toBeInTheDocument();
@@ -54,7 +63,8 @@ test('navigates to Countries and shows dashboard', async () => {
 });
 
 test('navigates to States and shows list', async () => {
-  render(<App />);
+  api.getStates.mockResolvedValue({ data: mockStates });
+  await renderApp();
   await userEvent.click(screen.getByRole('link', { name: /states/i }));
   await waitFor(() => {
     expect(screen.getByText(/^States Dashboard$/i)).toBeInTheDocument();
@@ -62,7 +72,8 @@ test('navigates to States and shows list', async () => {
 });
 
 test('navigates to Cities and shows list', async () => {
-  render(<App />);
+  api.getCities.mockResolvedValue({ data: mockCities });
+  await renderApp();
   await userEvent.click(screen.getByRole('link', { name: /cities/i }));
   await waitFor(() => {
     expect(screen.getByText(/^Cities Dashboard$/i)).toBeInTheDocument();

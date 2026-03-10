@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import CountryList from './CountryList';
@@ -19,24 +19,26 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-test('shows loading state initially', () => {
+const renderCountryList = async () => {
+  await act(async () => {
+    render(
+      <MemoryRouter>
+        <CountryList />
+      </MemoryRouter>
+    );
+  });
+};
+
+test('shows loading state initially', async () => {
   api.getCountries.mockImplementation(() => new Promise(() => {}));
-  render(
-    <MemoryRouter>
-      <CountryList />
-    </MemoryRouter>
-  );
+  await renderCountryList();
   expect(screen.getByText(/Loading countries/i)).toBeInTheDocument();
 });
 
 test('shows error state when fetch fails', async () => {
   api.getCountries.mockRejectedValue(new Error('Network error'));
 
-  render(
-    <MemoryRouter>
-      <CountryList />
-    </MemoryRouter>
-  );
+  await renderCountryList();
 
   await waitFor(() => {
     expect(screen.getByText(/Error:/i)).toBeInTheDocument();
@@ -45,11 +47,7 @@ test('shows error state when fetch fails', async () => {
 });
 
 test('renders country list when data loads', async () => {
-  render(
-    <MemoryRouter>
-      <CountryList />
-    </MemoryRouter>
-  );
+  await renderCountryList();
 
   await waitFor(() => {
     expect(screen.getByText(/Countries Dashboard/i)).toBeInTheDocument();

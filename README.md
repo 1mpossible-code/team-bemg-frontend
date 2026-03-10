@@ -79,6 +79,26 @@ REACT_APP_API_BASE_URL=https://your-api.example.com
 **States**: Name search, country code, population range  
 **Cities**: Name search, country/state codes, population range
 
+## Test Files
+
+Run all tests:
+
+```bash
+npm test
+```
+
+- `src/App.test.js`: Verifies top-level app behavior, including title rendering, nav links, and route navigation to Countries, States, and Cities views.
+- `src/components/CountryList.test.js`: Verifies country list states: loading, API error with retry UI, and successful country data rendering.
+- `src/components/StateList.test.js`: Verifies state list states, URL-query filter parsing, search/clear behavior, retry flow, and row click navigation to filtered cities.
+- `src/components/CityList.test.js`: Verifies city list states, URL-query filter parsing, search/clear behavior, retry flow, and stats/empty state rendering.
+- `src/components/CreateCountryForm.test.js`: Verifies validation, duplicate country code handling, timeout error messaging, and success redirect behavior.
+- `src/components/ErrorBoundary.test.js`: Verifies fallback UI is shown when a child component throws.
+- `src/api.test.js`: Verifies API helper functions call the expected endpoints (`/countries`, `/states`, `/cities`) with correct query params.
+
+Test setup:
+
+- `src/setupTests.js`: Loads `@testing-library/jest-dom`, applies a `TextEncoder` polyfill for router tests, and filters known React `act(...)` warning noise in test output.
+
 ## Learn More
 
 - [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started)
