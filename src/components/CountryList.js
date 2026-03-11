@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { getCountries } from '../api';
+import { getCountries, deleteCountry, getStates, deleteState, getCities, deleteCity } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue } from '../utils/formatters';
 import FilterBar from './FilterBar';
+import ConfirmModal from './ConfirmModal';
 
 const defaultFilters = {
   country_name: '',
@@ -24,6 +25,9 @@ const CountryList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(defaultFilters);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [countryToDelete, setCountryToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -74,6 +78,55 @@ const CountryList = () => {
   const handleClear = () => {
     setFilters(defaultFilters);
     navigate({ pathname: location.pathname, search: '' });
+  };
+
+  const handleDeleteClick = (country) => {
+    setCountryToDelete(country);
+    setModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!countryToDelete) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      // Fetch all states for this country
+      const statesResponse = await getStates({ country_code: countryToDelete.country_code });
+      const states = statesResponse.data;
+      
+      // For each state, delete all its cities
+      for (const state of states) {
+        const citiesResponse = await getCities({ state_code: state.state_code });
+        const cities = citiesResponse.data;
+        
+        // Delete all cities in this state
+        for (const city of cities) {
+          await deleteCity(city.state_code, city.city_name);
+        }
+        
+        // Delete the state
+        await deleteState(state.state_code);
+      }
+      
+      // Finally, delete the country
+      await deleteCountry(countryToDelete.country_code);
+      
+      setModalOpen(false);
+      setCountryToDelete(null);
+      setIsDeleting(false);
+      fetchData(filters);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to delete country and dependencies');
+      setModalOpen(false);
+      setCountryToDelete(null);
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setModalOpen(false);
+    setCountryToDelete(null);
   };
 
   if (loading) {
@@ -182,6 +235,7 @@ const CountryList = () => {
             {attributes.map((attribute) => (
               <th key={attribute}>{formatAttributeName(attribute)}</th>
             ))}
+            {countries.length > 0 && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -201,11 +255,32 @@ const CountryList = () => {
                 {attributes.map((attribute) => (
                   <td key={attribute}>{formatCellValue(country[attribute], attribute)}</td>
                 ))}
+                <td>
+                  <button
+                    type="button"
+                    className="btn-delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(country);
+                    }}
+                    aria-label="Delete country"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={modalOpen}
+        title="Delete Country"
+        message={`Are you sure you want to delete ${countryToDelete?.country_name || 'this country'}? This will also delete all associated states and cities. This action cannot be undone.`}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

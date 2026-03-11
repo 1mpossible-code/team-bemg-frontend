@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { getStates } from '../api';
+import { getStates, deleteState, getCities, deleteCity } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue } from '../utils/formatters';
 import FilterBar from './FilterBar';
+import ConfirmModal from './ConfirmModal';
 
 const defaultFilters = {
   state_name: '',
@@ -24,6 +25,9 @@ const StateList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(defaultFilters);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [stateToDelete, setStateToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -74,6 +78,46 @@ const StateList = () => {
   const handleClear = () => {
     setFilters(defaultFilters);
     navigate({ pathname: location.pathname, search: '' });
+  };
+
+  const handleDeleteClick = (state) => {
+    setStateToDelete(state);
+    setModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!stateToDelete) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      // Fetch all cities for this state
+      const citiesResponse = await getCities({ state_code: stateToDelete.state_code });
+      const cities = citiesResponse.data;
+      
+      // Delete all cities in this state
+      for (const city of cities) {
+        await deleteCity(city.state_code, city.city_name);
+      }
+      
+      // Finally, delete the state
+      await deleteState(stateToDelete.state_code);
+      
+      setModalOpen(false);
+      setStateToDelete(null);
+      setIsDeleting(false);
+      fetchData(filters);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to delete state and dependencies');
+      setModalOpen(false);
+      setStateToDelete(null);
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setModalOpen(false);
+    setStateToDelete(null);
   };
 
   if (loading) {
@@ -174,6 +218,7 @@ const StateList = () => {
             {attributes.map((attribute) => (
               <th key={attribute}>{formatAttributeName(attribute)}</th>
             ))}
+            {states.length > 0 && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -193,11 +238,32 @@ const StateList = () => {
                 {attributes.map((attribute) => (
                   <td key={attribute}>{formatCellValue(state[attribute], attribute)}</td>
                 ))}
+                <td>
+                  <button
+                    type="button"
+                    className="btn-delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(state);
+                    }}
+                    aria-label="Delete state"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={modalOpen}
+        title="Delete State"
+        message={`Are you sure you want to delete ${stateToDelete?.state_name || 'this state'}? This will also delete all associated cities. This action cannot be undone.`}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

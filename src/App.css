@@ -1,13 +1,25 @@
 :root {
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
   --success: #10b981;
+  --success-dark: #047857;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-dark: #991b1b;
+  --danger-light: #fecaca;
+  --error: #d32f2f;
   --bg-gray: #f8fafc;
+  --bg-table-header: #f1f5f9;
   --text-main: #1e293b;
   --text-muted: #64748b;
   --border-color: #e2e8f0;
+  --gray-light: #e2e8f0;
+  --gray-medium: #cbd5e1;
   --white: #ffffff;
+  --overlay: rgba(0, 0, 0, 0.5);
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 * {
@@ -65,12 +77,12 @@ body {
 }
 
 .navbar a:hover {
-  background-color: #eff6ff;
+  background-color: var(--primary-light);
   color: var(--primary);
 }
 
 .navbar a.active {
-  background-color: #eff6ff;
+  background-color: var(--primary-light);
   color: var(--primary);
 }
 
@@ -150,7 +162,7 @@ h2 {
 }
 
 .data-table th {
-  background-color: #f1f5f9;
+  background-color: var(--bg-table-header);
   padding: 16px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -173,7 +185,7 @@ h2 {
 }
 
 .data-table tbody tr:hover {
-  background-color: #eff6ff;
+  background-color: var(--primary-light);
   cursor: pointer;
 }
 
@@ -209,11 +221,11 @@ h2 {
 }
 
 .error-container {
-  color: #dc2626;
+  color: var(--danger);
 }
 
 .error-container p {
-  color: #dc2626;
+  color: var(--danger);
 }
 
 .retry-btn {
@@ -300,12 +312,12 @@ h2 {
 }
 
 .btn-secondary {
-  background: #e2e8f0;
+  background: var(--gray-light);
   color: var(--text-main);
 }
 
 .btn-secondary:hover {
-  background: #cbd5e1;
+  background: var(--gray-medium);
 }
 
 .btn:disabled {
@@ -375,20 +387,20 @@ h2 {
 }
 
 .field-error {
-  color: #d32f2f;
+  color: var(--error);
   font-size: 0.875rem;
   margin-top: 4px;
 }
 
 .field-success {
-  color: #047857;
+  color: var(--success-dark);
   font-size: 0.9rem;
   margin-top: 4px;
 }
 
 .app-error-boundary {
   background: var(--white);
-  border: 1px solid #fecaca;
+  border: 1px solid var(--danger-light);
   border-radius: 12px;
   padding: 32px;
   margin: 24px auto;
@@ -400,7 +412,7 @@ h2 {
 
 .app-error-boundary h2 {
   margin: 0;
-  color: #991b1b;
+  color: var(--danger-dark);
 }
 
 .app-error-boundary p {
@@ -412,4 +424,123 @@ input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* Delete Button */
+.btn-delete {
+  padding: 6px 12px;
+  background: var(--danger);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+  background: var(--danger-hover);
+}
+
+.btn-delete:focus {
+  outline: 2px solid var(--danger);
+  outline-offset: 2px;
+}
+
+/* Danger variant for modal buttons */
+.btn-danger {
+  background: var(--danger);
+  color: var(--white);
+}
+
+.btn-danger:hover {
+  background: var(--danger-hover);
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  max-width: 500px;
+  width: 90%;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-body p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.modal-actions {
+  padding: 16px 24px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Prevent row hover on Actions cell */
+.data-table tbody tr td:last-child {
+  background: inherit;
+}
+
+.data-table tbody tr:hover td:last-child {
+  background: inherit;
 }

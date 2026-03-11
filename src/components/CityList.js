@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { getCities } from '../api';
+import { getCities, deleteCity } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue } from '../utils/formatters';
 import FilterBar from './FilterBar';
+import ConfirmModal from './ConfirmModal';
 
 const defaultFilters = {
   name: '',
@@ -25,6 +26,9 @@ const CityList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(defaultFilters);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [cityToDelete, setCityToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -75,6 +79,35 @@ const CityList = () => {
   const handleClear = () => {
     setFilters(defaultFilters);
     navigate({ pathname: location.pathname, search: '' });
+  };
+
+  const handleDeleteClick = (city) => {
+    setCityToDelete(city);
+    setModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!cityToDelete) return;
+    
+    setIsDeleting(true);
+    deleteCity(cityToDelete.state_code, cityToDelete.city_name)
+      .then(() => {
+        setModalOpen(false);
+        setCityToDelete(null);
+        setIsDeleting(false);
+        fetchData(filters);
+      })
+      .catch((err) => {
+        setError(err.response?.data?.message || err.message || 'Failed to delete city');
+        setModalOpen(false);
+        setCityToDelete(null);
+        setIsDeleting(false);
+      });
+  };
+
+  const handleDeleteCancel = () => {
+    setModalOpen(false);
+    setCityToDelete(null);
   };
 
   if (loading) {
@@ -191,6 +224,7 @@ const CityList = () => {
             {attributes.map((attribute) => (
               <th key={attribute}>{formatAttributeName(attribute)}</th>
             ))}
+            {cities.length > 0 && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -206,11 +240,32 @@ const CityList = () => {
                 {attributes.map((attribute) => (
                   <td key={attribute}>{formatCellValue(city[attribute], attribute)}</td>
                 ))}
+                <td>
+                  <button
+                    type="button"
+                    className="btn-delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(city);
+                    }}
+                    aria-label="Delete city"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={modalOpen}
+        title="Delete City"
+        message={`Are you sure you want to delete ${cityToDelete?.city_name || 'this city'}? This action cannot be undone.`}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };
