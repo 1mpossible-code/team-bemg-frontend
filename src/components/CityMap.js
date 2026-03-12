@@ -1,11 +1,22 @@
 import React from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, Tooltip } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const CityMap = ({ cities }) => {
   const center = cities.length > 0 && cities[0].coordinates 
     ? [cities[0].coordinates.latitude, cities[0].coordinates.longitude] 
     : [20, 0];
+
+  // Helper to calculate radius based on population
+  const getRadius = (population) => {
+    if (!population) return 5; // Default for missing data
+    return Math.max(4, Math.sqrt(population) / 250); 
+  };
+
+  // Helper to highlight massive cities
+  const getColor = (population) => {
+    return population > 5000000 ? '#1e3a8a' : '#2563eb'; // Darker blue for megacities
+  };
 
   return (
     <div className="map-wrapper" style={{
@@ -32,22 +43,21 @@ const CityMap = ({ cities }) => {
             <CircleMarker
               key={idx}
               center={[lat, lng]}
+              radius={getRadius(city.population)}
               pathOptions={{ 
-                color: '#2563eb',
+                color: getColor(city.population), 
                 fillColor: '#60a5fa', 
-                fillOpacity: 0.5,
-                weight: 1 
+                fillOpacity: 0.6,
+                weight: 1.5 
               }}
-              radius={7}
             >
-              <Popup>
-                <div style={{ fontFamily: 'sans-serif' }}>
-                  <strong style={{ fontSize: '14px' }}>{city.city_name}</strong>
-                  <p style={{ margin: '4px 0 0', color: '#666' }}>
-                    Pop: {city.population?.toLocaleString()}
-                  </p>
+              <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
+                <div style={{ fontFamily: 'sans-serif', textAlign: 'center' }}>
+                  <strong>{city.city_name}</strong>
+                  <br/>
+                  <span style={{ color: '#666' }}>Pop: {city.population?.toLocaleString()}</span>
                 </div>
-              </Popup>
+              </Tooltip>
             </CircleMarker>
           );
         })}
