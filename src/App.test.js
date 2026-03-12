@@ -6,6 +6,13 @@ import * as api from './api';
 // Mock the API module
 jest.mock('./api');
 
+jest.mock('react-leaflet', () => ({
+  MapContainer: ({ children }) => <div data-testid="map-container">{children}</div>,
+  TileLayer: () => <div data-testid="tile-layer" />,
+  CircleMarker: ({ children }) => <div data-testid="circle-marker">{children}</div>,
+  Popup: ({ children }) => <div data-testid="popup">{children}</div>,
+}));
+
 const mockCountries = [
   { country_code: 'US', name: 'United States', population: 331000000 },
   { country_code: 'CA', name: 'Canada', population: 38000000 },

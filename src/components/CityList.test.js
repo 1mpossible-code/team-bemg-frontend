@@ -7,10 +7,18 @@ const mockNavigate = jest.fn();
 const mockLocation = { pathname: '/cities', search: '' };
 
 jest.mock('../api');
+
 jest.mock('react-router', () => ({
   ...jest.requireActual('react-router'),
   useNavigate: () => mockNavigate,
   useLocation: () => mockLocation,
+}));
+
+jest.mock('react-leaflet', () => ({
+  MapContainer: ({ children }) => <div data-testid="map-container">{children}</div>,
+  TileLayer: () => <div data-testid="tile-layer" />,
+  CircleMarker: ({ children }) => <div data-testid="circle-marker">{children}</div>,
+  Popup: ({ children }) => <div data-testid="popup">{children}</div>,
 }));
 
 const mockCities = [

@@ -5,6 +5,7 @@ import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue } from '../utils/formatters';
 import FilterBar from './FilterBar';
+import CityMap from './CityMap'
 import ConfirmModal from './ConfirmModal';
 
 const defaultFilters = {
@@ -218,6 +219,7 @@ const CityList = () => {
             </span>
         </div>
       </div>
+      <CityMap cities=  {cities} />
       <table className="data-table">
         <thead>
           <tr>

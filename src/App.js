@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router';
 import './App.css';
+import 'leaflet/dist/leaflet.css';
 
 
 import CountryList from './components/CountryList';
