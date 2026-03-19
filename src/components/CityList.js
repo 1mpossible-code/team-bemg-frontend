@@ -36,12 +36,12 @@ const CityList = () => {
   const fetchData = useCallback((params = {}) => {
     setLoading(true);
     setError(null);
-    
+
     const cleanParams = normalizeQueryParams(params, [
       'min_population',
       'max_population'
     ]);
-    
+
     getCities(cleanParams)
       .then((res) => {
         setCities(res.data);
@@ -89,7 +89,7 @@ const CityList = () => {
 
   const handleDeleteConfirm = () => {
     if (!cityToDelete) return;
-    
+
     setIsDeleting(true);
     deleteCity(cityToDelete.state_code, cityToDelete.city_name)
       .then(() => {
@@ -136,10 +136,15 @@ const CityList = () => {
   }
 
   const attributes = Object.keys(cities[0] || {});
-  const avgPopulation = cities.length > 0 
+  const avgPopulation = cities.length > 0
     ? Math.round(cities.reduce((acc, curr) => acc + (curr.population || 0), 0) / cities.length)
     : 0;
-  
+
+  const ONE_MILLION = 1_000_000;
+
+
+  const renderAvgPoplaitonValue = avgPopulation >= ONE_MILLION ? `${Math.floor(avgPopulation / ONE_MILLION)}M` : `${avgPopulation}K`
+
   const filterConfig = [
     {
       name: 'name',
@@ -193,33 +198,33 @@ const CityList = () => {
       <p className="endpoint-badge">
         Showing {cities.length} records from cities
       </p>
-      
+
       <FilterBar
         filters={filterConfig}
         onFilterChange={handleFilterChange}
         onSearch={handleSearch}
         onClear={handleClear}
       />
-      
+
       <div className="stats-grid">
         <div className="stat-card">
-            <span className="stat-label">Total Cities</span>
-            <span className="stat-value">{cities.length}</span>
+          <span className="stat-label">Total Cities</span>
+          <span className="stat-value">{cities.length}</span>
         </div>
         <div className="stat-card">
-            <span className="stat-label">Total Population</span>
-            <span className="stat-value">
+          <span className="stat-label">Total Population</span>
+          <span className="stat-value">
             {(cities.reduce((acc, curr) => acc + (curr.population || 0), 0) / 1000000).toFixed(1)}M
-            </span>
+          </span>
         </div>
         <div className="stat-card">
-            <span className="stat-label">Avg Population</span>
-            <span className="stat-value">
-            {(avgPopulation / 1000).toFixed(0)}K
-            </span>
+          <span className="stat-label">Avg Population</span>
+          <span className="stat-value">
+            {renderAvgPoplaitonValue}
+          </span>
         </div>
       </div>
-      <CityMap cities=  {cities} />
+      <CityMap cities={cities} />
       <table className="data-table">
         <thead>
           <tr>
