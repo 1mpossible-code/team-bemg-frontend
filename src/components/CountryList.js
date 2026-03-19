@@ -19,6 +19,21 @@ const formatAttributeName = (attribute) =>
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
+const ONE_MILLION = 1_000_000;
+const ONE_BILLION = 1_000_000_000;
+
+const formatPopulationSummary = (population) => {
+  if (population >= ONE_BILLION) {
+    return `${(population / ONE_BILLION).toFixed(1)}B`;
+  }
+
+  if (population >= ONE_MILLION) {
+    return `${(population / ONE_MILLION).toFixed(1)}M`;
+  }
+
+  return population.toLocaleString();
+};
+
 
 const CountryList = () => {
   const [countries, setCountries] = useState([]);
@@ -154,6 +169,7 @@ const CountryList = () => {
   }
 
   const attributes = Object.keys(countries[0] || {});
+  const totalPopulation = countries.reduce((acc, curr) => acc + (curr.population || 0), 0);
   
   const filterConfig = [
     {
@@ -225,7 +241,7 @@ const CountryList = () => {
         <div className="stat-card">
             <span className="stat-label">Total Population</span>
             <span className="stat-value">
-            {(countries.reduce((acc, curr) => acc + (curr.population || 0), 0) / 1000000).toFixed(1)}M
+            {formatPopulationSummary(totalPopulation)}
             </span>
         </div>
       </div>
