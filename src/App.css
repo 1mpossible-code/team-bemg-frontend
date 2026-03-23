@@ -701,6 +701,10 @@ input::-webkit-inner-spin-button {
 }
 
 @media (max-width: 900px) {
+  .navbar h1 {
+    font-size: 1.6rem;
+  }
+
   .globe-panel {
     grid-template-columns: 1fr;
     padding: 20px;
@@ -716,5 +720,15 @@ input::-webkit-inner-spin-button {
   .globe-loading,
   .globe-fallback {
     min-height: 320px;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    padding: 0 16px;
+  }
+
+  .navbar h1 {
+    font-size: 1.35rem;
   }
 }
