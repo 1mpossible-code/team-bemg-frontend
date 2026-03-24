@@ -29,6 +29,7 @@ const mockCities = [
 ];
 
 beforeEach(() => {
+  window.localStorage.clear();
   api.getCountries.mockImplementation(() => new Promise(() => {}));
   api.getStates.mockImplementation(() => new Promise(() => {}));
   api.getCities.mockImplementation(() => new Promise(() => {}));
@@ -58,6 +59,16 @@ test('renders nav links', async () => {
   expect(screen.getByRole('link', { name: /countries/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /states/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /cities/i })).toBeInTheDocument();
+});
+
+test('toggles light and dark mode', async () => {
+  await renderApp();
+
+  const toggle = screen.getByRole('button', { name: /switch to dark mode/i });
+  await userEvent.click(toggle);
+
+  expect(document.documentElement).toHaveClass('dark');
+  expect(window.localStorage.getItem('team-bemg-theme')).toBe('dark');
 });
 
 test('navigates to Countries and shows dashboard', async () => {

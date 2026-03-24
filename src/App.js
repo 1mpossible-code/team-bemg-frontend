@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router';
+import { MoonStar, SunMedium } from 'lucide-react';
 import './App.css';
 
 
@@ -11,17 +12,52 @@ import CreateStateForm from './components/CreateStateForm';
 import CreateCityForm from './components/CreateCityForm';
 import ErrorBoundary from './components/ErrorBoundary';
 
+const THEME_KEY = 'team-bemg-theme';
+
 function App() {
+  const [theme, setTheme] = useState(() => {
+    const storedTheme = window.localStorage.getItem(THEME_KEY);
+
+    if (storedTheme === 'dark' || storedTheme === 'light') {
+      return storedTheme;
+    }
+
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    window.localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
+
+  const themeLabel = useMemo(
+    () => (theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'),
+    [theme]
+  );
+
   return (
     <Router>
       <div className="App">
         <nav className="navbar">
-          <h1>Geographic Database</h1>
-          <ul>
-            <li><NavLink to="/" end>Countries</NavLink></li>
-            <li><NavLink to="/states">States</NavLink></li>
-            <li><NavLink to="/cities">Cities</NavLink></li>
-          </ul>
+          <div className="navbar-shell">
+            <div className="navbar-branding">
+              <h1>Geographic Database</h1>
+              <ul>
+                <li><NavLink to="/" end>Countries</NavLink></li>
+                <li><NavLink to="/states">States</NavLink></li>
+                <li><NavLink to="/cities">Cities</NavLink></li>
+              </ul>
+            </div>
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={() => setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))}
+              aria-label={themeLabel}
+            >
+              {theme === 'dark' ? <SunMedium size={18} /> : <MoonStar size={18} />}
+              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+            </button>
+          </div>
         </nav>
 
         <main className="content">
