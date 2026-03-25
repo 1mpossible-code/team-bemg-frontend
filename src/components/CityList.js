@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { getCities, deleteCity } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue } from '../utils/formatters';
 import FilterBar from './FilterBar';
-import CityMap from './CityMap'
+import Globe3D from './Globe3D';
 import ConfirmModal from './ConfirmModal';
 
 const defaultFilters = {
@@ -27,6 +27,7 @@ const CityList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(defaultFilters);
+  const [activeMarker, setActiveMarker] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [cityToDelete, setCityToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -111,6 +112,75 @@ const CityList = () => {
     setCityToDelete(null);
   };
 
+  const createMarkerAvatar = useCallback((city) => {
+    const initials = city.city_name
+      .split(' ')
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() || '')
+      .join('');
+    const hue = city.country_code
+      .split('')
+      .reduce((total, char) => total + char.charCodeAt(0), 0) % 360;
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72">
+        <defs>
+          <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="hsl(${hue} 88% 62%)" />
+            <stop offset="100%" stop-color="hsl(${(hue + 45) % 360} 76% 34%)" />
+          </linearGradient>
+        </defs>
+        <rect width="72" height="72" rx="36" fill="url(#g)" />
+        <text x="50%" y="52%" text-anchor="middle" dominant-baseline="middle" fill="#f8fafc" font-family="Arial, sans-serif" font-size="24" font-weight="700">${initials}</text>
+      </svg>`;
+
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }, []);
+
+  const globeMarkers = useMemo(() => {
+    return cities
+      .filter((city) => {
+        const lat = city.coordinates?.latitude;
+        const lng = city.coordinates?.longitude;
+
+        return Number.isFinite(lat) && Number.isFinite(lng);
+      })
+      .sort((left, right) => (right.population || 0) - (left.population || 0))
+      .slice(0, 14)
+      .map((city) => ({
+        lat: city.coordinates.latitude,
+        lng: city.coordinates.longitude,
+        src: createMarkerAvatar(city),
+        label: city.city_name,
+        size: Math.min(0.16, Math.max(0.08, Math.sqrt(city.population || 50000) / 12000)),
+        city,
+      }));
+  }, [cities, createMarkerAvatar]);
+
+  useEffect(() => {
+    setActiveMarker(globeMarkers[0] || null);
+  }, [globeMarkers]);
+
+  const handleMarkerSelect = useCallback((marker) => {
+    if (!marker?.city) {
+      return;
+    }
+
+    setActiveMarker(marker);
+
+    const nextFilters = {
+      ...defaultFilters,
+      name: marker.city.city_name,
+      state_code: marker.city.state_code || '',
+      country_code: marker.city.country_code || '',
+    };
+
+    setFilters(nextFilters);
+    navigate({
+      pathname: location.pathname,
+      search: buildSearchFromFilters(nextFilters),
+    });
+  }, [location.pathname, navigate]);
+
   if (loading) {
     return (
       <div className="container">
@@ -143,7 +213,10 @@ const CityList = () => {
   const ONE_MILLION = 1_000_000;
 
 
-  const renderAvgPoplaitonValue = avgPopulation >= ONE_MILLION ? `${Math.floor(avgPopulation / ONE_MILLION)}M` : `${avgPopulation}K`
+  const renderAvgPoplaitonValue = avgPopulation >= ONE_MILLION ? `${Math.floor(avgPopulation / ONE_MILLION)}M` : `${avgPopulation}K`;
+
+  const mappableCities = globeMarkers.length;
+  const largestMappedCity = globeMarkers[0]?.city || null;
 
   const filterConfig = [
     {
@@ -224,7 +297,64 @@ const CityList = () => {
           </span>
         </div>
       </div>
-      <CityMap cities={cities} />
+
+      {mappableCities > 0 && (
+        <section className="globe-panel">
+          <div className="globe-copy">
+            <span className="globe-eyebrow">Aceternity Globe3D</span>
+            <h3>Global city pulse</h3>
+            <p>
+              Explore the biggest mapped cities in your dataset. Hover a marker for context,
+              then click it to focus the table on that city.
+            </p>
+
+            <div className="globe-stats-grid">
+              <div className="globe-stat-pill">
+                <span>Plotted markers</span>
+                <strong>{mappableCities}</strong>
+              </div>
+              <div className="globe-stat-pill">
+                <span>Largest mapped city</span>
+                <strong>{largestMappedCity?.city_name || 'N/A'}</strong>
+              </div>
+            </div>
+
+            <div className="globe-active-card">
+              <span className="globe-card-label">Active marker</span>
+              <strong>{activeMarker?.city?.city_name || 'Hover or tap a city'}</strong>
+              <p>
+                {activeMarker?.city
+                  ? `${activeMarker.city.state_code || 'N/A'}, ${activeMarker.city.country_code || 'N/A'} - Population ${(activeMarker.city.population || 0).toLocaleString()}`
+                  : 'Pick a marker to filter the dashboard down to a specific city.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="globe-visual-wrap">
+            <Globe3D
+              markers={globeMarkers}
+              className="city-globe"
+              config={{
+                atmosphereColor: '#66c2ff',
+                atmosphereIntensity: 0.95,
+                bumpScale: 5,
+                autoRotateSpeed: 0.35,
+                showWireframe: true,
+                enableZoom: true,
+                minDistance: 5.8,
+                maxDistance: 8,
+              }}
+              onMarkerClick={handleMarkerSelect}
+              onMarkerHover={(marker) => {
+                if (marker) {
+                  setActiveMarker(marker);
+                }
+              }}
+            />
+          </div>
+        </section>
+      )}
+
       <table className="data-table">
         <thead>
           <tr>
