@@ -48,6 +48,59 @@ function latLngToVector3(lat, lng, radius) {
   return new THREE.Vector3(x, y, z);
 }
 
+/** WebGL plane + texture so the pin shares the same projection as the leader line (Html/CSS drifts). */
+function MarkerIconPlane({
+  marker,
+  radius,
+  defaultSize,
+  hovered,
+  onPointerEnter,
+  onPointerLeave,
+  onClick,
+}) {
+  const texture = useTexture(marker.src);
+
+  useEffect(() => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.needsUpdate = true;
+  }, [texture]);
+
+  const markerSize = marker.size || defaultSize;
+  // World units: keep planes a few % of globe radius (old formula topped out ~0.38*r → absurdly large).
+  const sizeT = Math.min(1.45, Math.max(0.85, markerSize / defaultSize));
+  const s = radius * (0.024 + 0.018 * sizeT);
+
+  return (
+    <mesh
+      scale={hovered ? 1.1 : 1}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        onPointerEnter();
+      }}
+      onPointerOut={(event) => {
+        event.stopPropagation();
+        onPointerLeave();
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+    >
+      <planeGeometry args={[s, s]} />
+      <meshBasicMaterial
+        map={texture}
+        transparent
+        opacity={hovered ? 1 : 0.92}
+        depthWrite={false}
+        polygonOffset
+        polygonOffsetFactor={-0.5}
+        polygonOffsetUnits={-0.5}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
+}
+
 function Marker({ marker, radius, defaultSize, onClick, onHover }) {
   const [hovered, setHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -75,6 +128,14 @@ function Marker({ marker, radius, defaultSize, onClick, onHover }) {
 
     return { lineCenter: center, lineQuaternion: quaternion };
   }, [surfacePosition, topPosition]);
+
+  // Tangent plane at the pin: same normal as the leader line so the rod meets the icon center.
+  const labelQuaternion = useMemo(() => {
+    const outward = topPosition.clone().normalize();
+    const q = new THREE.Quaternion();
+    q.setFromUnitVectors(new THREE.Vector3(0, 0, 1), outward);
+    return q;
+  }, [topPosition]);
 
   useFrame(() => {
     if (!imageGroupRef.current) {
@@ -105,8 +166,6 @@ function Marker({ marker, radius, defaultSize, onClick, onHover }) {
     onClick?.(marker);
   }, [marker, onClick]);
 
-  const markerSize = marker.size || defaultSize;
-
   return (
     <group visible={isVisible}>
       <mesh position={lineCenter} quaternion={lineQuaternion}>
@@ -123,33 +182,16 @@ function Marker({ marker, radius, defaultSize, onClick, onHover }) {
         <meshBasicMaterial color={hovered ? '#f59e0b' : '#ef4444'} />
       </mesh>
 
-      <group ref={imageGroupRef} position={topPosition}>
-        <Html
-          transform
-          center
-          sprite
-          distanceFactor={10}
-          style={{
-            pointerEvents: isVisible ? 'auto' : 'none',
-            opacity: isVisible ? 1 : 0,
-            transition: 'opacity 0.15s ease-out',
-          }}
-        >
-          <button
-            type="button"
-            className={`globe-marker${hovered ? ' is-hovered' : ''}`}
-            style={{
-              width: `${markerSize * 100}px`,
-              height: `${markerSize * 100}px`,
-            }}
-            onMouseEnter={handlePointerEnter}
-            onMouseLeave={handlePointerLeave}
-            onClick={handleClick}
-            aria-label={marker.label || 'Map marker'}
-          >
-            <img src={marker.src} alt={marker.label || 'Map marker'} draggable={false} />
-          </button>
-        </Html>
+      <group ref={imageGroupRef} position={topPosition} quaternion={labelQuaternion}>
+        <MarkerIconPlane
+          marker={marker}
+          radius={radius}
+          defaultSize={defaultSize}
+          hovered={hovered}
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
+          onClick={handleClick}
+        />
       </group>
     </group>
   );
