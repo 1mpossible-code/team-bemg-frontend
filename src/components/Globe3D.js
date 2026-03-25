@@ -66,7 +66,6 @@ function MarkerIconPlane({
   }, [texture]);
 
   const markerSize = marker.size || defaultSize;
-  // World units: keep planes a few % of globe radius (old formula topped out ~0.38*r → absurdly large).
   const sizeT = Math.min(1.45, Math.max(0.85, markerSize / defaultSize));
   const s = radius * (0.024 + 0.018 * sizeT);
 
@@ -129,7 +128,6 @@ function Marker({ marker, radius, defaultSize, onClick, onHover }) {
     return { lineCenter: center, lineQuaternion: quaternion };
   }, [surfacePosition, topPosition]);
 
-  // Tangent plane at the pin: same normal as the leader line so the rod meets the icon center.
   const labelQuaternion = useMemo(() => {
     const outward = topPosition.clone().normalize();
     const q = new THREE.Quaternion();
