@@ -37,6 +37,11 @@ const defaultConfig = {
   backgroundColor: 'transparent',
 };
 
+const MARKER_PLANE_BASE = 0.024;
+const MARKER_PLANE_PER_SIZE = 0.018;
+const MARKER_SIZE_RATIO_MIN = 0.85;
+const MARKER_SIZE_RATIO_MAX = 1.45;
+
 function latLngToVector3(lat, lng, radius) {
   const phi = (90 - lat) * (Math.PI / 180);
   const theta = (lng + 180) * (Math.PI / 180);
@@ -66,8 +71,11 @@ function MarkerIconPlane({
   }, [texture]);
 
   const markerSize = marker.size || defaultSize;
-  const sizeT = Math.min(1.45, Math.max(0.85, markerSize / defaultSize));
-  const s = radius * (0.024 + 0.018 * sizeT);
+  const sizeT = Math.min(
+    MARKER_SIZE_RATIO_MAX,
+    Math.max(MARKER_SIZE_RATIO_MIN, markerSize / defaultSize)
+  );
+  const s = radius * (MARKER_PLANE_BASE + MARKER_PLANE_PER_SIZE * sizeT);
 
   return (
     <mesh
