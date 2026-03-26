@@ -32,12 +32,14 @@ const CityList = () => {
   const [cityToDelete, setCityToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
   const location = useLocation();
 
   const fetchData = useCallback((params = {}) => {
     setLoading(true);
     setError(null);
+    setCurrentPage(1);
 
     const cleanParams = normalizeQueryParams(params, [
       'min_population',
@@ -135,12 +137,19 @@ const CityList = () => {
     return sortableCities;
   }, [cities, sortConfig]);
 
+  const ITEMS_PER_PAGE = 50;
+  const totalPages = Math.ceil(sortedCities.length / ITEMS_PER_PAGE);
+  const paginatedCities = sortedCities.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
   const requestSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
+    setCurrentPage(1);
   };
 
   const createMarkerAvatar = useCallback((city) => {
@@ -406,12 +415,12 @@ const CityList = () => {
           </tr>
         </thead>
         <tbody>
-          {sortedCities.length === 0 ? (
+          {paginatedCities.length === 0 ? (
             <tr>
               <td colSpan={attributes.length || 1}>No cities found.</td>
             </tr>
           ) : (
-            sortedCities.map((city, index) => (
+            paginatedCities.map((city, index) => (
               <tr
                 key={city.city_name && city.state_code ? `${city.state_code}-${city.city_name}` : index}
               >
@@ -436,6 +445,37 @@ const CityList = () => {
           )}
         </tbody>
       </table>
+      <div className="pagination-container">
+        <span className="pagination-info">
+          <span>Showing</span>
+          <strong>{(currentPage - 1) * ITEMS_PER_PAGE + 1}</strong>
+          <span>to</span>
+          <strong>{Math.min(currentPage * ITEMS_PER_PAGE, sortedCities.length)}</strong>
+          <span>of</span>
+          <strong>{sortedCities.length}</strong>
+          <span>cities</span>
+        </span>
+        
+        <div className="pagination-controls">
+          <button 
+            className="pagination-button"
+            onClick={() => setCurrentPage(p => p - 1)}
+            disabled={currentPage === 1}
+          >
+            &larr; Previous
+          </button>
+          
+          <span className="page-indicator">Page {currentPage} of {totalPages}</span>
+          
+          <button 
+            className="pagination-button"
+            onClick={() => setCurrentPage(p => p + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next &rarr;
+          </button>
+        </div>
+      </div>
       <ConfirmModal
         isOpen={modalOpen}
         title="Delete City"
