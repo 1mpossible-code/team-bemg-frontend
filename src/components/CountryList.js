@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { getCountries, deleteCountry, getStates, deleteState, getCities, deleteCity } from '../api';
 import { normalizeQueryParams } from '../utils/query';
@@ -43,6 +43,7 @@ const CountryList = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [countryToDelete, setCountryToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -142,6 +143,36 @@ const CountryList = () => {
   const handleDeleteCancel = () => {
     setModalOpen(false);
     setCountryToDelete(null);
+  };
+
+  const sortedCountries = useMemo(() => {
+    let sortableCountries = [...countries];
+    if (sortConfig.key !== null) {
+      sortableCountries.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        if (aValue === undefined || aValue === null) aValue = '';
+        if (bValue === undefined || bValue === null) bValue = '';
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableCountries;
+  }, [countries, sortConfig]);
+
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
   };
 
   if (loading) {
@@ -249,18 +280,28 @@ const CountryList = () => {
         <thead>
           <tr>
             {attributes.map((attribute) => (
-              <th key={attribute}>{formatAttributeName(attribute)}</th>
+              <th 
+                key={attribute}
+                onClick={() => requestSort(attribute)}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
+                title={`Sort by ${formatAttributeName(attribute)}`}
+              >
+                {formatAttributeName(attribute)}
+                {sortConfig.key === attribute ? (
+                  sortConfig.direction === 'asc' ? ' ▲' : ' ▼'
+                ) : null}
+              </th>
             ))}
             {countries.length > 0 && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
-          {countries.length === 0 ? (
+          {sortedCountries.length === 0 ? (
             <tr>
               <td colSpan={attributes.length || 1}>No countries found.</td>
             </tr>
           ) : (
-            countries.map((country, index) => (
+            sortedCountries.map((country, index) => (
               <tr
                 key={country.country_code || index}
                 onClick={() =>

@@ -31,6 +31,7 @@ const CityList = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [cityToDelete, setCityToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -110,6 +111,36 @@ const CityList = () => {
   const handleDeleteCancel = () => {
     setModalOpen(false);
     setCityToDelete(null);
+  };
+
+  const sortedCities = useMemo(() => {
+    let sortableCities = [...cities];
+    if (sortConfig.key !== null) {
+      sortableCities.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        if (aValue === undefined || aValue === null) aValue = '';
+        if (bValue === undefined || bValue === null) bValue = '';
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableCities;
+  }, [cities, sortConfig]);
+
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
   };
 
   const createMarkerAvatar = useCallback((city) => {
@@ -359,18 +390,28 @@ const CityList = () => {
         <thead>
           <tr>
             {attributes.map((attribute) => (
-              <th key={attribute}>{formatAttributeName(attribute)}</th>
+              <th 
+                key={attribute}
+                onClick={() => requestSort(attribute)}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
+                title={`Sort by ${formatAttributeName(attribute)}`}
+              >
+                {formatAttributeName(attribute)}
+                {sortConfig.key === attribute ? (
+                  sortConfig.direction === 'asc' ? ' ▲' : ' ▼'
+                ) : null}
+              </th>
             ))}
             {cities.length > 0 && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
-          {cities.length === 0 ? (
+          {sortedCities.length === 0 ? (
             <tr>
               <td colSpan={attributes.length || 1}>No cities found.</td>
             </tr>
           ) : (
-            cities.map((city, index) => (
+            sortedCities.map((city, index) => (
               <tr
                 key={city.city_name && city.state_code ? `${city.state_code}-${city.city_name}` : index}
               >

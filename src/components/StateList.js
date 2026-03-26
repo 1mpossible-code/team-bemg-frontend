@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { getStates, deleteState, getCities, deleteCity } from '../api';
 import { normalizeQueryParams } from '../utils/query';
@@ -28,6 +28,7 @@ const StateList = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [stateToDelete, setStateToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -118,6 +119,36 @@ const StateList = () => {
   const handleDeleteCancel = () => {
     setModalOpen(false);
     setStateToDelete(null);
+  };
+
+  const sortedStates = useMemo(() => {
+    let sortableStates = [...states];
+    if (sortConfig.key !== null) {
+      sortableStates.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        if (aValue === undefined || aValue === null) aValue = '';
+        if (bValue === undefined || bValue === null) bValue = '';
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableStates;
+  }, [states, sortConfig]);
+
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
   };
 
   if (loading) {
@@ -216,18 +247,28 @@ const StateList = () => {
         <thead>
           <tr>
             {attributes.map((attribute) => (
-              <th key={attribute}>{formatAttributeName(attribute)}</th>
+              <th 
+                key={attribute}
+                onClick={() => requestSort(attribute)}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
+                title={`Sort by ${formatAttributeName(attribute)}`}
+              >
+                {formatAttributeName(attribute)}
+                {sortConfig.key === attribute ? (
+                  sortConfig.direction === 'asc' ? ' ▲' : ' ▼'
+                ) : null}
+              </th>
             ))}
             {states.length > 0 && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
-          {states.length === 0 ? (
+          {sortedStates.length === 0 ? (
             <tr>
               <td colSpan={attributes.length || 1}>No states found.</td>
             </tr>
           ) : (
-            states.map((state, index) => (
+            sortedStates.map((state, index) => (
               <tr
                 key={state.state_code || index}
                 onClick={() =>
