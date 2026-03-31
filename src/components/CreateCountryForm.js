@@ -1,16 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { createCountry, getCountry } from '../api';
-
-const CONTINENT_OPTIONS = [
-  'Africa',
-  'Asia',
-  'Europe',
-  'North America',
-  'South America',
-  'Oceania',
-  'Antarctica',
-];
+import { createCountry, getCountry, getContinents } from '../api';
 
 const initialForm = {
   country_code: '',
@@ -30,8 +20,19 @@ const CreateCountryForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [continentOptions, setContinentOptions] = useState([]);
   const redirectTimeoutRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getContinents()
+      .then((res) =>
+        setContinentOptions(
+          [...res.data].sort((a, b) => a.continent_name.localeCompare(b.continent_name))
+        )
+      )
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -227,8 +228,8 @@ const CreateCountryForm = () => {
             aria-describedby={errors.continent ? "continent-error" : undefined}
           >
             <option value="">Select a continent</option>
-            {CONTINENT_OPTIONS.map((c) => (
-              <option key={c} value={c}>{c}</option>
+            {continentOptions.map((c) => (
+              <option key={c.continent_name} value={c.continent_name}>{c.continent_name}</option>
             ))}
           </select>
           {errors.continent && (
