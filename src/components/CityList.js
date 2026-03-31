@@ -430,6 +430,17 @@ const CityList = () => {
                 <td>
                   <button
                     type="button"
+                    className="btn btn-secondary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/cities/${city.state_code}/${city.city_name}/edit`);
+                    }}
+                    aria-label="Edit city"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
                     className="btn-delete"
                     onClick={(e) => {
                       e.stopPropagation();

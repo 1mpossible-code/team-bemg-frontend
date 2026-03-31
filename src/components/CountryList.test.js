@@ -1,10 +1,16 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
 import CountryList from './CountryList';
 import * as api from '../api';
 
+const mockNavigate = jest.fn();
+
 jest.mock('../api');
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
+  useNavigate: () => mockNavigate,
+  useLocation: () => ({ pathname: '/', search: '' }),
+}));
 
 const mockCountries = [
   { country_code: 'US', name: 'United States', population: 331000000 },
@@ -13,6 +19,8 @@ const mockCountries = [
 
 beforeEach(() => {
   api.getCountries.mockResolvedValue({ data: mockCountries });
+  api.getContinents.mockResolvedValue({ data: [] });
+  mockNavigate.mockReset();
 });
 
 afterEach(() => {
@@ -22,9 +30,7 @@ afterEach(() => {
 const renderCountryList = async () => {
   await act(async () => {
     render(
-      <MemoryRouter>
-        <CountryList />
-      </MemoryRouter>
+      <CountryList />
     );
   });
 };
@@ -54,4 +60,13 @@ test('renders country list when data loads', async () => {
   });
   expect(screen.getByText(/United States/i)).toBeInTheDocument();
   expect(screen.getByText(/Canada/i)).toBeInTheDocument();
+});
+
+test('clicking edit navigates to the country edit page', async () => {
+  await renderCountryList();
+
+  const editButtons = await screen.findAllByRole('button', { name: /Edit country/i });
+  await userEvent.click(editButtons[0]);
+
+  expect(mockNavigate).toHaveBeenCalledWith('/countries/US/edit');
 });

@@ -282,6 +282,17 @@ const StateList = () => {
                 <td>
                   <button
                     type="button"
+                    className="btn btn-secondary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/states/${state.state_code}/edit`);
+                    }}
+                    aria-label="Edit state"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
                     className="btn-delete"
                     onClick={(e) => {
                       e.stopPropagation();

@@ -316,6 +316,17 @@ const CountryList = () => {
                 <td>
                   <button
                     type="button"
+                    className="btn btn-secondary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/countries/${country.country_code}/edit`);
+                    }}
+                    aria-label="Edit country"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
                     className="btn-delete"
                     onClick={(e) => {
                       e.stopPropagation();

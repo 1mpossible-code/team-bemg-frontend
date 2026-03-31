@@ -33,6 +33,7 @@ beforeEach(() => {
   api.getCountries.mockImplementation(() => new Promise(() => {}));
   api.getStates.mockImplementation(() => new Promise(() => {}));
   api.getCities.mockImplementation(() => new Promise(() => {}));
+  api.getContinents.mockResolvedValue({ data: [] });
 });
 
 afterEach(async () => {

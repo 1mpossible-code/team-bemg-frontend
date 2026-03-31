@@ -125,3 +125,12 @@ test('renders city stats and empty state', async () => {
   expect(screen.getByText(/Total Cities/i)).toBeInTheDocument();
   expect(screen.getByText(/Avg Population/i)).toBeInTheDocument();
 });
+
+test('clicking edit navigates to the city edit page', async () => {
+  await renderCityList();
+
+  const editButtons = await screen.findAllByRole('button', { name: /Edit city/i });
+  await userEvent.click(editButtons[0]);
+
+  expect(mockNavigate).toHaveBeenCalledWith('/cities/CA/Los Angeles/edit');
+});

@@ -117,3 +117,12 @@ test('clicking a state row navigates to cities filtered by state code', async ()
 
   expect(mockNavigate).toHaveBeenCalledWith('/cities?state_code=CA');
 });
+
+test('clicking edit navigates to the state edit page', async () => {
+  await renderStateList();
+
+  const editButtons = await screen.findAllByRole('button', { name: /Edit state/i });
+  await userEvent.click(editButtons[0]);
+
+  expect(mockNavigate).toHaveBeenCalledWith('/states/CA/edit');
+});
