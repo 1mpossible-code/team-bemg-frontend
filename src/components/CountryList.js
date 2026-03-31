@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { getCountries, deleteCountry, getStates, deleteState, getCities, deleteCity } from '../api';
+import { getCountries, deleteCountry, getStates, deleteState, getCities, deleteCity, getContinents } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue } from '../utils/formatters';
@@ -40,6 +40,7 @@ const CountryList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(defaultFilters);
+  const [continentOptions, setContinentOptions] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [countryToDelete, setCountryToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -65,6 +66,12 @@ const CountryList = () => {
         setError(err.response?.data?.message || err.message || 'Failed to fetch');
         setLoading(false);
       });
+  }, []);
+
+  useEffect(() => {
+    getContinents()
+      .then((res) => setContinentOptions(res.data))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -215,15 +222,9 @@ const CountryList = () => {
       label: 'Continent',
       type: 'select',
       value: filters.continent,
-      options: [
-        { value: 'Africa', label: 'Africa' },
-        { value: 'Asia', label: 'Asia' },
-        { value: 'Europe', label: 'Europe' },
-        { value: 'North America', label: 'North America' },
-        { value: 'South America', label: 'South America' },
-        { value: 'Oceania', label: 'Oceania' },
-        { value: 'Antarctica', label: 'Antarctica' }
-      ]
+      options: [...continentOptions]
+        .sort((a, b) => a.continent_name.localeCompare(b.continent_name))
+        .map((c) => ({ value: c.continent_name, label: c.continent_name }))
     },
     {
       name: 'min_population',

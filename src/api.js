@@ -10,6 +10,9 @@ if (typeof process.env.REACT_APP_API_BASE_URL === 'undefined') {
 const API = axios.create({ baseURL });
 const REQUEST_TIMEOUT_MS = 10000;
 
+// Continents API
+export const getContinents = () => API.get('/continents');
+
 // Countries API
 export const getCountries = (params) => API.get('/countries', { params });
 export const getCountry = (code) => API.get(`/countries/${code}`);
