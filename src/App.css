@@ -794,16 +794,16 @@ input::-webkit-inner-spin-button {
   align-items: center;
   margin-top: 1.5rem;
   padding: 1rem;
-  background-color: #f8fafc;
+  background-color: var(--bg-gray);
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .pagination-info {
   display: flex;
   align-items: center;
   gap: 3px; 
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -816,8 +816,9 @@ input::-webkit-inner-spin-button {
 .pagination-button {
   padding: 0.5rem 1rem;
   border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background: white;
+  border: 1px solid var(--gray-medium);
+  background: var(--white);
+  color: var(--text-main);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -828,11 +829,11 @@ input::-webkit-inner-spin-button {
 }
 
 .pagination-button:not(:disabled):hover {
-  background-color: #f1f5f9;
-  border-color: #94a3b8;
+  background-color: var(--bg-table-header);
+  border-color: var(--text-muted);
 }
 
 .page-indicator {
   font-weight: 500;
-  color: #1e293b;
+  color: var(--text-main);
 }
