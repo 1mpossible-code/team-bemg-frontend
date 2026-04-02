@@ -21,6 +21,7 @@
   --overlay: rgba(0, 0, 0, 0.5);
   --night: #07111f;
   --night-soft: #12243a;
+  --text-on-dark-surface: #f8fafc;
   --sky-glow: #7dd3fc;
   --accent-warm: #f59e0b;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -635,7 +636,7 @@ input::-webkit-inner-spin-button {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  color: var(--white);
+  color: var(--text-on-dark-surface);
   position: relative;
   z-index: 1;
 }
@@ -693,7 +694,7 @@ input::-webkit-inner-spin-button {
 .globe-stat-pill strong,
 .globe-active-card strong {
   font-size: 1.05rem;
-  color: var(--white);
+  color: var(--text-on-dark-surface);
 }
 
 .globe-active-card {
@@ -726,7 +727,7 @@ input::-webkit-inner-spin-button {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--white);
+  color: var(--text-on-dark-surface);
   min-height: 420px;
 }
 
