@@ -25,6 +25,15 @@ const formatTimestamp = (value) => {
   return formatter.format(parsed);
 };
 
+const ONE_MILLION = 1_000_000;
+const ONE_BILLION = 1_000_000_000;
+
+export const formatPopulationSummary = (population) => {
+  if (population >= ONE_BILLION) return `${(population / ONE_BILLION).toFixed(1)}B`;
+  if (population >= ONE_MILLION) return `${(population / ONE_MILLION).toFixed(1)}M`;
+  return population.toLocaleString();
+};
+
 export const formatCellValue = (value, key) => {
   if (value === null || value === undefined || value === '') return '-';
 

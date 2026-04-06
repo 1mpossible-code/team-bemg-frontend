@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { getCities, deleteCity } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
-import { formatCellValue } from '../utils/formatters';
+import { formatCellValue, formatPopulationSummary } from '../utils/formatters';
 import FilterBar from './FilterBar';
 import Globe3D from './Globe3D';
 import ConfirmModal from './ConfirmModal';
@@ -254,7 +254,7 @@ const CityList = () => {
   const ONE_MILLION = 1_000_000;
 
 
-  const renderAvgPoplaitonValue = avgPopulation >= ONE_MILLION ? `${Math.floor(avgPopulation / ONE_MILLION)}M` : `${avgPopulation}K`;
+  const renderAvgPoplaitonValue = avgPopulation >= ONE_MILLION ? `${Math.floor(avgPopulation / ONE_MILLION)}M` : `${Math.round(avgPopulation / 1000)}K`;
 
   const mappableCities = globeMarkers.length;
   const largestMappedCity = globeMarkers[0]?.city || null;
@@ -329,7 +329,7 @@ const CityList = () => {
         <div className="stat-card">
           <span className="stat-label">Total Population</span>
           <span className="stat-value">
-            {(cities.reduce((acc, curr) => acc + (curr.population || 0), 0) / 1000000).toFixed(1)}M
+            {formatPopulationSummary(cities.reduce((acc, curr) => acc + (curr.population || 0), 0))}
           </span>
         </div>
         <div className="stat-card">

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { getCountries, deleteCountry, getStates, deleteState, getCities, deleteCity, getContinents } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
-import { formatCellValue } from '../utils/formatters';
+import { formatCellValue, formatPopulationSummary } from '../utils/formatters';
 import FilterBar from './FilterBar';
 import ConfirmModal from './ConfirmModal';
 import { Pencil, Trash2, Plus } from 'lucide-react';
@@ -19,21 +19,6 @@ const formatAttributeName = (attribute) =>
   attribute
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
-
-const ONE_MILLION = 1_000_000;
-const ONE_BILLION = 1_000_000_000;
-
-const formatPopulationSummary = (population) => {
-  if (population >= ONE_BILLION) {
-    return `${(population / ONE_BILLION).toFixed(1)}B`;
-  }
-
-  if (population >= ONE_MILLION) {
-    return `${(population / ONE_MILLION).toFixed(1)}M`;
-  }
-
-  return population.toLocaleString();
-};
 
 
 const CountryList = () => {

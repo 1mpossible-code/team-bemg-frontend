@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { getStates, deleteState, getCities, deleteCity } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
-import { formatCellValue } from '../utils/formatters';
+import { formatCellValue, formatPopulationSummary } from '../utils/formatters';
 import FilterBar from './FilterBar';
 import ConfirmModal from './ConfirmModal';
 import { Pencil, Trash2, Plus } from 'lucide-react';
@@ -241,7 +241,7 @@ const StateList = () => {
         <div className="stat-card">
             <span className="stat-label">Total Population</span>
             <span className="stat-value">
-            {(states.reduce((acc, curr) => acc + (curr.population || 0), 0) / 1000000).toFixed(1)}M
+            {formatPopulationSummary(states.reduce((acc, curr) => acc + (curr.population || 0), 0))}
             </span>
         </div>
       </div>
