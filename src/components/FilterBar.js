@@ -1,4 +1,5 @@
 import React from 'react';
+import { Search, X } from 'lucide-react';
 
 const FilterBar = ({ filters, onFilterChange, onSearch, onClear }) => {
   const handleInputChange = (e) => {
@@ -48,10 +49,12 @@ const FilterBar = ({ filters, onFilterChange, onSearch, onClear }) => {
         ))}
       </div>
       <div className="filter-actions">
-        <button className="btn btn-primary" onClick={handleSearchClick}>
+        <button className="btn btn-primary btn-with-icon" onClick={handleSearchClick}>
+          <Search size={15} />
           Search
         </button>
-        <button className="btn btn-secondary" onClick={handleClearClick}>
+        <button className="btn btn-secondary btn-with-icon" onClick={handleClearClick}>
+          <X size={15} />
           Clear
         </button>
       </div>

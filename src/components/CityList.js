@@ -7,6 +7,7 @@ import { formatCellValue } from '../utils/formatters';
 import FilterBar from './FilterBar';
 import Globe3D from './Globe3D';
 import ConfirmModal from './ConfirmModal';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 
 const defaultFilters = {
   name: '',
@@ -302,9 +303,10 @@ const CityList = () => {
         <h2>Cities Dashboard</h2>
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary btn-with-icon"
           onClick={() => navigate('/cities/create')}
         >
+          <Plus size={15} />
           Create City
         </button>
       </div>
@@ -428,28 +430,30 @@ const CityList = () => {
                   <td key={attribute}>{formatCellValue(city[attribute], attribute)}</td>
                 ))}
                 <td>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/cities/${city.state_code}/${city.city_name}/edit`);
-                    }}
-                    aria-label="Edit city"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-delete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClick(city);
-                    }}
-                    aria-label="Delete city"
-                  >
-                    Delete
-                  </button>
+                  <div className="table-actions">
+                    <button
+                      type="button"
+                      className="btn-icon btn-icon-edit"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/cities/${city.state_code}/${city.city_name}/edit`);
+                      }}
+                      aria-label="Edit city"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-icon btn-icon-delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(city);
+                      }}
+                      aria-label="Delete city"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))

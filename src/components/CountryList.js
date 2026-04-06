@@ -6,6 +6,7 @@ import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilt
 import { formatCellValue } from '../utils/formatters';
 import FilterBar from './FilterBar';
 import ConfirmModal from './ConfirmModal';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 
 const defaultFilters = {
   country_name: '',
@@ -248,9 +249,10 @@ const CountryList = () => {
         <h2>Countries Dashboard</h2>
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary btn-with-icon"
           onClick={() => navigate('/countries/create')}
         >
+          <Plus size={15} />
           Create Country
         </button>
       </div>
@@ -314,28 +316,30 @@ const CountryList = () => {
                   <td key={attribute}>{formatCellValue(country[attribute], attribute)}</td>
                 ))}
                 <td>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/countries/${country.country_code}/edit`);
-                    }}
-                    aria-label="Edit country"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-delete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClick(country);
-                    }}
-                    aria-label="Delete country"
-                  >
-                    Delete
-                  </button>
+                  <div className="table-actions">
+                    <button
+                      type="button"
+                      className="btn-icon btn-icon-edit"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/countries/${country.country_code}/edit`);
+                      }}
+                      aria-label="Edit country"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-icon btn-icon-delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(country);
+                      }}
+                      aria-label="Delete country"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))

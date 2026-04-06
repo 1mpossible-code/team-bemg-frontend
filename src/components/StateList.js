@@ -6,6 +6,7 @@ import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilt
 import { formatCellValue } from '../utils/formatters';
 import FilterBar from './FilterBar';
 import ConfirmModal from './ConfirmModal';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 
 const defaultFilters = {
   state_name: '',
@@ -214,9 +215,10 @@ const StateList = () => {
         <h2>States Dashboard</h2>
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary btn-with-icon"
           onClick={() => navigate('/states/create')}
         >
+          <Plus size={15} />
           Create State
         </button>
       </div>
@@ -280,28 +282,30 @@ const StateList = () => {
                   <td key={attribute}>{formatCellValue(state[attribute], attribute)}</td>
                 ))}
                 <td>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/states/${state.state_code}/edit`);
-                    }}
-                    aria-label="Edit state"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-delete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClick(state);
-                    }}
-                    aria-label="Delete state"
-                  >
-                    Delete
-                  </button>
+                  <div className="table-actions">
+                    <button
+                      type="button"
+                      className="btn-icon btn-icon-edit"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/states/${state.state_code}/edit`);
+                      }}
+                      aria-label="Edit state"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-icon btn-icon-delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(state);
+                      }}
+                      aria-label="Delete state"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))

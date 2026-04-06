@@ -368,8 +368,13 @@ h2 {
   border-radius: 8px;
   font-weight: 600;
   font-size: 0.95rem;
+  line-height: 1;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.btn-with-icon {
+  padding: 12px 20px;
 }
 
 .btn-primary {
@@ -393,6 +398,18 @@ h2 {
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-with-icon svg {
+  flex-shrink: 0;
+  display: block;
 }
 
 /* List header with title + action button */
@@ -516,6 +533,64 @@ input::-webkit-inner-spin-button {
 .btn-delete:focus {
   outline: 2px solid var(--danger);
   outline-offset: 2px;
+}
+
+/* Table action icon buttons */
+.table-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-icon-edit {
+  background: var(--gray-light);
+  color: var(--text-main);
+}
+
+.btn-icon-edit:hover {
+  background: var(--gray-medium);
+}
+
+.btn-icon-delete {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.btn-icon-delete:hover {
+  background: var(--danger);
+  color: var(--white);
+}
+
+.btn-icon-primary {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.btn-icon-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-icon:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.btn-icon-delete:focus {
+  outline-color: var(--danger);
 }
 
 /* Danger variant for modal buttons */
