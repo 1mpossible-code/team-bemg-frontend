@@ -13,13 +13,22 @@ jest.mock('react-router', () => ({
 }));
 
 const mockCountries = [
-  { country_code: 'US', name: 'United States', population: 331000000 },
-  { country_code: 'CA', name: 'Canada', population: 38000000 }
+  { country_code: 'US', country_name: 'United States', population: 331000000 },
+  { country_code: 'CA', country_name: 'Canada', population: 38000000 }
 ];
 
 beforeEach(() => {
   api.getCountries.mockResolvedValue({ data: mockCountries });
   api.getContinents.mockResolvedValue({ data: [] });
+  api.getCountryDeleteImpact.mockResolvedValue({
+    data: {
+      states: 2,
+      cities: 5,
+      direct_dependency_count: 2,
+      total_dependency_count: 7,
+    }
+  });
+  api.deleteCountry.mockResolvedValue({});
   mockNavigate.mockReset();
 });
 
@@ -69,4 +78,41 @@ test('clicking edit navigates to the country edit page', async () => {
   await userEvent.click(editButtons[0]);
 
   expect(mockNavigate).toHaveBeenCalledWith('/countries/US/edit');
+});
+
+test('shows delete impact preview when opening delete confirmation', async () => {
+  await renderCountryList();
+
+  const deleteButtons = await screen.findAllByRole('button', { name: /Delete country/i });
+  await userEvent.click(deleteButtons[0]);
+
+  await waitFor(() => {
+    expect(api.getCountryDeleteImpact).toHaveBeenCalledWith('US');
+  });
+
+  expect(screen.getByText('Delete Country')).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText('Are you sure you want to delete "United States"? This action cannot be undone.')).toBeInTheDocument();
+  });
+  expect(
+    screen.getByText('This will also delete 2 state(s) and 5 city/cities (direct dependencies: 2, total dependencies removed: 7).')
+  ).toBeInTheDocument();
+});
+
+test('confirms deletion with a single cascade delete request', async () => {
+  await renderCountryList();
+
+  const deleteButtons = await screen.findAllByRole('button', { name: /Delete country/i });
+  await userEvent.click(deleteButtons[0]);
+
+  const confirmButton = await screen.findByRole('button', { name: 'Delete' });
+  await waitFor(() => {
+    expect(confirmButton).toBeEnabled();
+  });
+  await userEvent.click(confirmButton);
+
+  await waitFor(() => {
+    expect(api.deleteCountry).toHaveBeenCalledWith('US', { cascade: true });
+  });
+  expect(api.getCountries).toHaveBeenCalledTimes(2);
 });

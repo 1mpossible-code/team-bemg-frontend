@@ -19,7 +19,10 @@ export const getCountry = (code) => API.get(`/countries/${code}`);
 export const createCountry = (data) =>
   API.post('/countries', data, { timeout: REQUEST_TIMEOUT_MS });
 export const updateCountry = (code, data) => API.put(`/countries/${code}`, data);
-export const deleteCountry = (code) => API.delete(`/countries/${code}`);
+export const getCountryDeleteImpact = (code) =>
+  API.get(`/countries/${code}/delete-impact`);
+export const deleteCountry = (code, options = {}) =>
+  API.delete(`/countries/${code}`, { params: { cascade: options.cascade } });
 
 // States API
 export const getStates = (params) => API.get('/states', { params });
@@ -27,7 +30,10 @@ export const getStatesAll = () => API.get('/states');
 export const getState = (code) => API.get(`/states/${code}`);
 export const createState = (data) => API.post('/states', data);
 export const updateState = (code, data) => API.put(`/states/${code}`, data);
-export const deleteState = (code) => API.delete(`/states/${code}`);
+export const getStateDeleteImpact = (code) =>
+  API.get(`/states/${code}/delete-impact`);
+export const deleteState = (code, options = {}) =>
+  API.delete(`/states/${code}`, { params: { cascade: options.cascade } });
 
 // Cities API
 export const getCities = (params) => API.get('/cities', { params });

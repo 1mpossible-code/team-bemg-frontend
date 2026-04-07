@@ -30,6 +30,7 @@ describe('ConfirmModal', () => {
         isOpen={true}
         title="Delete Item"
         message="Are you sure you want to delete this item?"
+        details="This will also remove 3 dependent records."
         onConfirm={mockOnConfirm}
         onCancel={mockOnCancel}
         isDeleting={false}
@@ -38,8 +39,40 @@ describe('ConfirmModal', () => {
     
     expect(screen.getByText('Delete Item')).toBeInTheDocument();
     expect(screen.getByText('Are you sure you want to delete this item?')).toBeInTheDocument();
+    expect(screen.getByText('This will also remove 3 dependent records.')).toBeInTheDocument();
     expect(screen.getByText('Cancel')).toBeInTheDocument();
     expect(screen.getByText('Delete')).toBeInTheDocument();
+  });
+
+  test('does not render details when not provided', () => {
+    render(
+      <ConfirmModal
+        isOpen={true}
+        title="Delete Item"
+        message="Are you sure?"
+        onConfirm={mockOnConfirm}
+        onCancel={mockOnCancel}
+        isDeleting={false}
+      />
+    );
+
+    expect(screen.queryByText(/dependent records/i)).not.toBeInTheDocument();
+  });
+
+  test('disables confirm action when confirmDisabled is true', () => {
+    render(
+      <ConfirmModal
+        isOpen={true}
+        title="Delete Item"
+        message="Are you sure?"
+        onConfirm={mockOnConfirm}
+        onCancel={mockOnCancel}
+        isDeleting={false}
+        confirmDisabled={true}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
   });
 
   test('calls onCancel when Cancel button is clicked', () => {

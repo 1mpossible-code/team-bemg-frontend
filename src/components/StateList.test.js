@@ -126,3 +126,45 @@ test('clicking edit navigates to the state edit page', async () => {
 
   expect(mockNavigate).toHaveBeenCalledWith('/states/CA/edit');
 });
+
+test('loads delete impact preview and performs cascade state delete', async () => {
+  api.getStateDeleteImpact.mockResolvedValue({
+    data: { cities: 2, direct_dependency_count: 2, total_dependency_count: 2 },
+  });
+  api.deleteState.mockResolvedValue({});
+  api.getStates.mockResolvedValueOnce({ data: mockStates }).mockResolvedValueOnce({ data: [mockStates[1]] });
+
+  await renderStateList();
+
+  const deleteButtons = await screen.findAllByRole('button', { name: /Delete state/i });
+  await userEvent.click(deleteButtons[0]);
+
+  expect(api.getStateDeleteImpact).toHaveBeenCalledWith('CA');
+  expect(
+    await screen.findByText(/cascade delete 2 associated cities \(direct dependencies: 2, total dependencies removed: 2\)/i)
+  ).toBeInTheDocument();
+
+  await userEvent.click(screen.getByRole('button', { name: /^Delete$/i }));
+
+  await waitFor(() => {
+    expect(api.deleteState).toHaveBeenCalledWith('CA', { cascade: true });
+  });
+  await waitFor(() => {
+    expect(api.getStates).toHaveBeenCalledTimes(2);
+  });
+});
+
+test('shows zero-city delete impact preview when no dependent cities exist', async () => {
+  api.getStateDeleteImpact.mockResolvedValue({
+    data: { cities: 0, direct_dependency_count: 0, total_dependency_count: 0 },
+  });
+
+  await renderStateList();
+
+  const deleteButtons = await screen.findAllByRole('button', { name: /Delete state/i });
+  await userEvent.click(deleteButtons[0]);
+
+  expect(
+    await screen.findByText(/cascade delete 0 associated cities \(direct dependencies: 0, total dependencies removed: 0\)/i)
+  ).toBeInTheDocument();
+});

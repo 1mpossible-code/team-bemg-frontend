@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { getStates, deleteState, getCities, deleteCity } from '../api';
+import { getStates, deleteState, getStateDeleteImpact } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue, formatPopulationSummary } from '../utils/formatters';
@@ -20,6 +20,17 @@ const formatAttributeName = (attribute) =>
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
+const formatDeleteImpactDetails = (impact) => {
+  if (!impact) {
+    return 'Loading delete impact...';
+  }
+
+  const cityCount = impact.cities ?? impact.total_dependency_count ?? 0;
+  const directCount = impact.direct_dependency_count ?? cityCount;
+  const totalCount = impact.total_dependency_count ?? cityCount;
+
+  return `This will cascade delete ${cityCount} associated ${cityCount === 1 ? 'city' : 'cities'} (direct dependencies: ${directCount}, total dependencies removed: ${totalCount}).`;
+};
 
 const StateList = () => {
   const [states, setStates] = useState([]);
@@ -28,6 +39,7 @@ const StateList = () => {
   const [filters, setFilters] = useState(defaultFilters);
   const [modalOpen, setModalOpen] = useState(false);
   const [stateToDelete, setStateToDelete] = useState(null);
+  const [deleteImpact, setDeleteImpact] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const navigate = useNavigate();
@@ -82,37 +94,41 @@ const StateList = () => {
     navigate({ pathname: location.pathname, search: '' });
   };
 
-  const handleDeleteClick = (state) => {
+  const handleDeleteClick = async (state) => {
+    setError(null);
     setStateToDelete(state);
+    setDeleteImpact(null);
     setModalOpen(true);
+
+    try {
+      const impactResponse = await getStateDeleteImpact(state.state_code);
+      setDeleteImpact(impactResponse.data);
+    } catch (err) {
+      setDeleteImpact(null);
+      setModalOpen(false);
+      setStateToDelete(null);
+      setError(err.response?.data?.message || err.message || 'Failed to load delete impact');
+    }
   };
 
   const handleDeleteConfirm = async () => {
     if (!stateToDelete) return;
-    
+
     setIsDeleting(true);
-    
+
     try {
-      // Fetch all cities for this state
-      const citiesResponse = await getCities({ state_code: stateToDelete.state_code });
-      const cities = citiesResponse.data;
-      
-      // Delete all cities in this state
-      for (const city of cities) {
-        await deleteCity(city.state_code, city.city_name);
-      }
-      
-      // Finally, delete the state
-      await deleteState(stateToDelete.state_code);
-      
+      await deleteState(stateToDelete.state_code, { cascade: true });
+
       setModalOpen(false);
       setStateToDelete(null);
-      setIsDeleting(false);
+      setDeleteImpact(null);
       fetchData(filters);
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to delete state and dependencies');
       setModalOpen(false);
       setStateToDelete(null);
+      setDeleteImpact(null);
+    } finally {
       setIsDeleting(false);
     }
   };
@@ -120,6 +136,7 @@ const StateList = () => {
   const handleDeleteCancel = () => {
     setModalOpen(false);
     setStateToDelete(null);
+    setDeleteImpact(null);
   };
 
   const sortedStates = useMemo(() => {
@@ -315,10 +332,12 @@ const StateList = () => {
       <ConfirmModal
         isOpen={modalOpen}
         title="Delete State"
-        message={`Are you sure you want to delete ${stateToDelete?.state_name || 'this state'}? This will also delete all associated cities. This action cannot be undone.`}
+        message={`Are you sure you want to delete ${stateToDelete?.state_name || 'this state'}? This action cannot be undone.`}
+        details={stateToDelete ? formatDeleteImpactDetails(deleteImpact) : ''}
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
         isDeleting={isDeleting}
+        confirmDisabled={!deleteImpact}
       />
     </div>
   );

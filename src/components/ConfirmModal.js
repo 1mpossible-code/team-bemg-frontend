@@ -1,6 +1,15 @@
 import React from 'react';
 
-const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, isDeleting }) => {
+const ConfirmModal = ({
+  isOpen,
+  title,
+  message,
+  details,
+  onConfirm,
+  onCancel,
+  isDeleting,
+  confirmDisabled = false,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -11,6 +20,7 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, isDeleting 
         </div>
         <div className="modal-body">
           <p>{message}</p>
+          {details ? <p>{details}</p> : null}
         </div>
         <div className="modal-actions">
           <button
@@ -25,7 +35,7 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, isDeleting 
             type="button"
             className="btn btn-danger"
             onClick={onConfirm}
-            disabled={isDeleting}
+            disabled={isDeleting || confirmDisabled}
           >
             {isDeleting ? 'Deleting...' : 'Delete'}
           </button>

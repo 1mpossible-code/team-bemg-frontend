@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { getCountries, deleteCountry, getStates, deleteState, getCities, deleteCity, getContinents } from '../api';
+import { getCountries, deleteCountry, getCountryDeleteImpact, getContinents } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue, formatPopulationSummary } from '../utils/formatters';
@@ -20,6 +20,17 @@ const formatAttributeName = (attribute) =>
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
+const formatDeleteImpactDetails = (impact) => {
+  if (!impact) {
+    return 'Loading delete impact...';
+  }
+
+  const stateCount = impact.states ?? impact.direct_dependency_count ?? 0;
+  const cityCount = impact.cities ?? 0;
+  const totalCount = impact.total_dependency_count ?? stateCount + cityCount;
+
+  return `This will also delete ${stateCount} state(s) and ${cityCount} city/cities (direct dependencies: ${stateCount}, total dependencies removed: ${totalCount}).`;
+};
 
 const CountryList = () => {
   const [countries, setCountries] = useState([]);
@@ -29,6 +40,7 @@ const CountryList = () => {
   const [continentOptions, setContinentOptions] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [countryToDelete, setCountryToDelete] = useState(null);
+  const [deleteImpact, setDeleteImpact] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const navigate = useNavigate();
@@ -89,46 +101,39 @@ const CountryList = () => {
     navigate({ pathname: location.pathname, search: '' });
   };
 
-  const handleDeleteClick = (country) => {
+  const handleDeleteClick = async (country) => {
     setCountryToDelete(country);
+    setDeleteImpact(null);
     setModalOpen(true);
+
+    try {
+      const response = await getCountryDeleteImpact(country.country_code);
+      setDeleteImpact(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to fetch delete impact');
+      setModalOpen(false);
+      setCountryToDelete(null);
+      setDeleteImpact(null);
+    }
   };
 
   const handleDeleteConfirm = async () => {
     if (!countryToDelete) return;
-    
+
     setIsDeleting(true);
-    
+
     try {
-      // Fetch all states for this country
-      const statesResponse = await getStates({ country_code: countryToDelete.country_code });
-      const states = statesResponse.data;
-      
-      // For each state, delete all its cities
-      for (const state of states) {
-        const citiesResponse = await getCities({ state_code: state.state_code });
-        const cities = citiesResponse.data;
-        
-        // Delete all cities in this state
-        for (const city of cities) {
-          await deleteCity(city.state_code, city.city_name);
-        }
-        
-        // Delete the state
-        await deleteState(state.state_code);
-      }
-      
-      // Finally, delete the country
-      await deleteCountry(countryToDelete.country_code);
-      
+      await deleteCountry(countryToDelete.country_code, { cascade: true });
       setModalOpen(false);
       setCountryToDelete(null);
-      setIsDeleting(false);
+      setDeleteImpact(null);
       fetchData(filters);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to delete country and dependencies');
+      setError(err.response?.data?.message || err.message || 'Failed to delete country');
       setModalOpen(false);
       setCountryToDelete(null);
+      setDeleteImpact(null);
+    } finally {
       setIsDeleting(false);
     }
   };
@@ -136,6 +141,7 @@ const CountryList = () => {
   const handleDeleteCancel = () => {
     setModalOpen(false);
     setCountryToDelete(null);
+    setDeleteImpact(null);
   };
 
   const sortedCountries = useMemo(() => {
@@ -334,10 +340,12 @@ const CountryList = () => {
       <ConfirmModal
         isOpen={modalOpen}
         title="Delete Country"
-        message={`Are you sure you want to delete ${countryToDelete?.country_name || 'this country'}? This will also delete all associated states and cities. This action cannot be undone.`}
+        message={countryToDelete ? `Are you sure you want to delete "${countryToDelete.country_name}"? This action cannot be undone.` : ''}
+        details={countryToDelete ? formatDeleteImpactDetails(deleteImpact) : ''}
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
         isDeleting={isDeleting}
+        confirmDisabled={!deleteImpact}
       />
     </div>
   );
