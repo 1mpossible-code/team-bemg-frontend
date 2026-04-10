@@ -21,6 +21,12 @@ const fillValidForm = async () => {
 };
 
 beforeEach(() => {
+  api.getContinents.mockResolvedValue({
+    data: [
+      { continent_name: 'North America' },
+      { continent_name: 'Europe' },
+    ],
+  });
   api.getCountry.mockRejectedValue({ response: { status: 404 } });
   api.createCountry.mockResolvedValue({ data: { ok: true } });
   mockNavigate.mockReset();
