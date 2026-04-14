@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { createCity } from '../api';
+import { createCity, getCountries, getStates } from '../api';
 
 const initialForm = {
   city_name: '',
@@ -14,10 +14,17 @@ const initialForm = {
 
 const CreateCityForm = () => {
   const [form, setForm] = useState(initialForm);
+  const [countries, setCountries] = useState([]);
+  const [allStates, setAllStates] = useState([]);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getCountries().then(res => setCountries(res.data)).catch(console.error);
+    getStates().then(res => setAllStates(res.data)).catch(console.error);
+  }, []);
 
   const validate = () => {
     const newErrors = {};
@@ -127,41 +134,44 @@ const CreateCityForm = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="state_code">State Code</label>
-          <input
-            id="state_code"
-            name="state_code"
-            type="text"
-            value={form.state_code}
-            onChange={handleChange}
-            placeholder="e.g., NY"
-            aria-invalid={!!errors.state_code}
-            aria-describedby={errors.state_code ? "state_code-error" : undefined}
-          />
-          {errors.state_code && (
-            <p id="state_code-error" className="field-error">
-              {errors.state_code}
-            </p>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="country_code">Country Code</label>
-          <input
+          <label htmlFor="country_code">Country</label>
+          <select
             id="country_code"
             name="country_code"
-            type="text"
             value={form.country_code}
             onChange={handleChange}
-            placeholder="e.g., US"
             aria-invalid={!!errors.country_code}
-            aria-describedby={errors.country_code ? "country_code-error" : undefined}
-          />
-          {errors.country_code && (
-            <p id="country_code-error" className="field-error">
-              {errors.country_code}
-            </p>
-          )}
+          >
+            <option value="">Select a Country</option>
+            {countries.map(c => (
+              <option key={c.country_code} value={c.country_code}>
+                {c.country_name} ({c.country_code})
+              </option>
+            ))}
+          </select>
+          {errors.country_code && <p className="field-error">{errors.country_code}</p>}
+        </div>
+          
+        <div className="form-group">
+          <label htmlFor="state_code">State</label>
+          <select
+            id="state_code"
+            name="state_code"
+            value={form.state_code}
+            onChange={handleChange}
+            aria-invalid={!!errors.state_code}
+            disabled={!form.country_code} // Disable until country is picked
+          >
+            <option value="">Select a State</option>
+            {allStates
+              .filter(s => s.country_code === form.country_code) 
+              .map(s => (
+                <option key={s.state_code} value={s.state_code}>
+                  {s.state_name} ({s.state_code})
+                </option>
+              ))}
+          </select>
+          {errors.state_code && <p className="field-error">{errors.state_code}</p>}
         </div>
 
         <div className="form-group">

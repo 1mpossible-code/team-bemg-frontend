@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { createState } from '../api';
+import { createState, getCountries } from '../api';
 
 const initialForm = {
   state_code: '',
@@ -13,10 +13,15 @@ const initialForm = {
 
 const CreateStateForm = () => {
   const [form, setForm] = useState(initialForm);
+  const [countries, setCountries] = useState([]);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getCountries().then(res => setCountries(res.data)).catch(console.error);
+  }, []);
 
   const validate = () => {
     const newErrors = {};
@@ -132,22 +137,22 @@ const CreateStateForm = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="country_code">Country Code</label>
-          <input
+          <label htmlFor="country_code">Country</label>
+          <select
             id="country_code"
             name="country_code"
-            type="text"
             value={form.country_code}
             onChange={handleChange}
-            placeholder="e.g., US"
             aria-invalid={!!errors.country_code}
-            aria-describedby={errors.country_code ? "country_code-error" : undefined}
-          />
-          {errors.country_code && (
-            <p id="country_code-error" className="field-error">
-              {errors.country_code}
-            </p>
-          )}
+          >
+            <option value="">Select a Country</option>
+            {countries.map(c => (
+              <option key={c.country_code} value={c.country_code}>
+                {c.country_name} ({c.country_code})
+              </option>
+            ))}
+          </select>
+          {errors.country_code && <p className="field-error">{errors.country_code}</p>}
         </div>
 
         <div className="form-group">
