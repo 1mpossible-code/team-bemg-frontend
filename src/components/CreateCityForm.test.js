@@ -11,10 +11,15 @@ jest.mock('react-router', () => ({
   useNavigate: () => mockNavigate,
 }));
 
+const mockCountries = { data: [{ country_code: 'US', country_name: 'United States' }] };
+const mockStates = { data: [{ state_code: 'CA', state_name: 'California', country_code: 'US' }] };
+
 const fillValidForm = async () => {
   await userEvent.type(screen.getByLabelText(/City Name/i), 'Los Angeles');
-  await userEvent.type(screen.getByLabelText(/State Code/i), 'CA');
-  await userEvent.type(screen.getByLabelText(/Country Code/i), 'US');
+  const countryOption = await screen.findByRole('option', { name: /United States/i });
+  await userEvent.selectOptions(screen.getByLabelText(/Country/i), countryOption);
+  const stateOption = await screen.findByRole('option', { name: /California/i });
+  await userEvent.selectOptions(screen.getByLabelText(/State/i), stateOption);
   await userEvent.type(screen.getByLabelText(/Population/i), '3979576');
   await userEvent.type(screen.getByLabelText(/Area \(km²\)/i), '1302');
   await userEvent.type(screen.getByLabelText(/Latitude/i), '34.0522');
@@ -22,6 +27,8 @@ const fillValidForm = async () => {
 };
 
 beforeEach(() => {
+  api.getCountries.mockResolvedValue(mockCountries);
+  api.getStates.mockResolvedValue(mockStates);
   api.createCity.mockResolvedValue({ data: { ok: true } });
   mockNavigate.mockReset();
 });
@@ -32,6 +39,8 @@ afterEach(() => {
 
 test('rejects invalid coordinates before submission', async () => {
   render(<CreateCityForm />);
+
+  await waitFor(() => expect(api.getCountries).toHaveBeenCalled());
 
   await fillValidForm();
   const latitudeInput = screen.getByLabelText(/Latitude/i);

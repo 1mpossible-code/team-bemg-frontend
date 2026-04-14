@@ -11,16 +11,19 @@ jest.mock('react-router', () => ({
   useNavigate: () => mockNavigate,
 }));
 
+const mockCountries = { data: [{ country_code: 'US', country_name: 'United States' }] };
+
 const fillValidForm = async () => {
   await userEvent.type(screen.getByLabelText(/State Name/i), 'California');
   await userEvent.type(screen.getByLabelText(/State Code/i), 'CA');
-  await userEvent.type(screen.getByLabelText(/Country Code/i), 'US');
+  await userEvent.selectOptions(screen.getByLabelText(/Country/i), 'US');
   await userEvent.type(screen.getByLabelText(/Capital/i), 'Sacramento');
   await userEvent.type(screen.getByLabelText(/Population/i), '39538223');
   await userEvent.type(screen.getByLabelText(/Area \(km²\)/i), '423970');
 };
 
 beforeEach(() => {
+  api.getCountries.mockResolvedValue(mockCountries);
   api.createState.mockResolvedValue({ data: { ok: true } });
   mockNavigate.mockReset();
 });
@@ -31,6 +34,7 @@ afterEach(() => {
 
 test('shows required field errors before submission', async () => {
   render(<CreateStateForm />);
+  await waitFor(() => expect(api.getCountries).toHaveBeenCalled());
 
   await userEvent.click(screen.getByRole('button', { name: /Create State/i }));
 
