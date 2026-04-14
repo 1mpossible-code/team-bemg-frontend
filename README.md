@@ -12,7 +12,7 @@ A React-based frontend for the Geographic Database API, providing an intuitive i
 
 ## Technology Stack
 
-- **React 18** with hooks
+- **React 19** with hooks
 - **React Router** for navigation
 - **Axios** for API calls
 - **CSS3** with modern styling
@@ -57,7 +57,7 @@ sh ./run-cloud.sh
 
 ### Optional: `.env` configuration
 
-If you prefer not to use `make run-local` / `make run-cloud`, you can set env vars manually and run:
+The app defaults to the local API at `http://127.0.0.1:8000/` if no env var is provided. If you prefer not to use `make run-local` / `make run-cloud`, you can set env vars manually and run:
 
 ```bash
 npm start
