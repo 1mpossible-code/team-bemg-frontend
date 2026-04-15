@@ -1,32 +1,69 @@
 jest.mock('axios', () => {
   const mockGet = jest.fn().mockResolvedValue({ data: [] });
   const mockDelete = jest.fn().mockResolvedValue({ data: {} });
+  const mockClient = {
+    get: mockGet,
+    delete: mockDelete,
+    defaults: { headers: { common: {} } }
+  };
   const mock = {
-    create: jest.fn(() => ({ get: mockGet, delete: mockDelete }))
+    create: jest.fn(() => mockClient)
   };
   mock.__mockGet = mockGet;
   mock.__mockDelete = mockDelete;
+  mock.__mockClient = mockClient;
   return mock;
 });
 
 import axios from 'axios';
 import {
+  ACCESS_TOKEN_STORAGE_KEY,
+  applyAccessToken,
+  clearAccessToken,
   deleteCountry,
   deleteState,
   getCountries,
   getCountryDeleteImpact,
   getStateDeleteImpact,
   getStates,
-  getCities
+  getCities,
+  getStoredAccessToken,
+  storeAccessToken
 } from './api';
 
 const mockGet = axios.__mockGet;
 const mockDelete = axios.__mockDelete;
+const mockClient = axios.__mockClient;
 
 describe('api', () => {
   beforeEach(() => {
     mockGet.mockClear();
     mockDelete.mockClear();
+    window.localStorage.clear();
+    delete mockClient.defaults.headers.common.Authorization;
+  });
+
+  test('storeAccessToken persists token and applies authorization header', () => {
+    storeAccessToken('abc123');
+
+    expect(getStoredAccessToken()).toBe('abc123');
+    expect(window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)).toBe('abc123');
+    expect(mockClient.defaults.headers.common.Authorization).toBe('Bearer abc123');
+  });
+
+  test('clearAccessToken removes token and authorization header', () => {
+    storeAccessToken('abc123');
+    clearAccessToken();
+
+    expect(getStoredAccessToken()).toBeNull();
+    expect(mockClient.defaults.headers.common.Authorization).toBeUndefined();
+  });
+
+  test('applyAccessToken clears authorization header when token is empty', () => {
+    applyAccessToken('abc123');
+    applyAccessToken(null);
+
+    expect(mockClient.defaults.headers.common.Authorization).toBeUndefined();
   });
 
   test('getCountries calls /countries', () => {

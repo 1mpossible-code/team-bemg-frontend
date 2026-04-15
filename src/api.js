@@ -5,6 +5,30 @@ const baseURL = process.env.REACT_APP_API_BASE_URL?.trim() || DEFAULT_API_BASE_U
 
 const API = axios.create({ baseURL });
 const REQUEST_TIMEOUT_MS = 10000;
+export const ACCESS_TOKEN_STORAGE_KEY = 'team-bemg-access-token';
+
+export const applyAccessToken = (token) => {
+  if (token) {
+    API.defaults.headers.common.Authorization = `Bearer ${token}`;
+    return;
+  }
+
+  delete API.defaults.headers.common.Authorization;
+};
+
+export const getStoredAccessToken = () => window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
+
+export const storeAccessToken = (token) => {
+  window.localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, token);
+  applyAccessToken(token);
+};
+
+export const clearAccessToken = () => {
+  window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+  applyAccessToken(null);
+};
+
+applyAccessToken(getStoredAccessToken());
 
 // Continents API
 export const getContinents = () => API.get('/continents');
