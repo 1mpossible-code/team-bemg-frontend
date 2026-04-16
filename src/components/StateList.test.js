@@ -30,6 +30,7 @@ const mockStates = [
 
 beforeEach(() => {
   api.getStates.mockResolvedValue({ data: mockStates });
+  api.getStoredAccessTokenRole.mockReturnValue('admin');
   mockNavigate.mockReset();
   mockLocation.pathname = '/states';
   mockLocation.search = '';
@@ -167,4 +168,17 @@ test('shows zero-city delete impact preview when no dependent cities exist', asy
   expect(
     await screen.findByText(/cascade delete 0 associated cities \(direct dependencies: 0, total dependencies removed: 0\)/i)
   ).toBeInTheDocument();
+});
+
+test('hides state mutation controls for non-admin users', async () => {
+  api.getStoredAccessTokenRole.mockReturnValue('user');
+  await renderStateList();
+
+  await waitFor(() => {
+    expect(screen.getByText(/^States Dashboard$/i)).toBeInTheDocument();
+  });
+
+  expect(screen.queryByRole('button', { name: /Create State/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Edit state/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Delete state/i })).not.toBeInTheDocument();
 });

@@ -38,6 +38,7 @@ const mockCities = [
 
 beforeEach(() => {
   api.getCities.mockResolvedValue({ data: mockCities });
+  api.getStoredAccessTokenRole.mockReturnValue('admin');
   mockNavigate.mockReset();
   mockLocation.pathname = '/cities';
   mockLocation.search = '';
@@ -133,4 +134,17 @@ test('clicking edit navigates to the city edit page', async () => {
   await userEvent.click(editButtons[0]);
 
   expect(mockNavigate).toHaveBeenCalledWith('/cities/CA/Los Angeles/edit');
+});
+
+test('hides city mutation controls for non-admin users', async () => {
+  api.getStoredAccessTokenRole.mockReturnValue('user');
+  await renderCityList();
+
+  await waitFor(() => {
+    expect(screen.getByText(/^Cities Dashboard$/i)).toBeInTheDocument();
+  });
+
+  expect(screen.queryByRole('button', { name: /Create City/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Edit city/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Delete city/i })).not.toBeInTheDocument();
 });

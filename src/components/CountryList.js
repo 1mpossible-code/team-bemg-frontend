@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { getCountries, deleteCountry, getCountryDeleteImpact, getContinents } from '../api';
+import { getCountries, deleteCountry, getCountryDeleteImpact, getContinents, getStoredAccessTokenRole } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue, formatPopulationSummary } from '../utils/formatters';
@@ -45,6 +45,7 @@ const CountryList = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const navigate = useNavigate();
   const location = useLocation();
+  const isAdmin = getStoredAccessTokenRole() === 'admin';
 
   const fetchData = useCallback((params = {}) => {
     setLoading(true);
@@ -238,14 +239,16 @@ const CountryList = () => {
     <div className="container">
       <div className="list-header">
         <h2>Countries Dashboard</h2>
-        <button
-          type="button"
-          className="btn btn-primary btn-with-icon"
-          onClick={() => navigate('/countries/create')}
-        >
-          <Plus size={15} />
-          Create Country
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            className="btn btn-primary btn-with-icon"
+            onClick={() => navigate('/countries/create')}
+          >
+            <Plus size={15} />
+            Create Country
+          </button>
+        )}
       </div>
       <p className="endpoint-badge">
         Showing {countries.length} records from countries
@@ -286,7 +289,7 @@ const CountryList = () => {
                 ) : null}
               </th>
             ))}
-            {countries.length > 0 && <th>Actions</th>}
+            {countries.length > 0 && isAdmin && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -306,32 +309,34 @@ const CountryList = () => {
                 {attributes.map((attribute) => (
                   <td key={attribute}>{formatCellValue(country[attribute], attribute)}</td>
                 ))}
-                <td>
-                  <div className="table-actions">
-                    <button
-                      type="button"
-                      className="btn-icon btn-icon-edit"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/countries/${country.country_code}/edit`);
-                      }}
-                      aria-label="Edit country"
-                    >
-                      <Pencil size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-icon btn-icon-delete"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(country);
-                      }}
-                      aria-label="Delete country"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </td>
+                {isAdmin && (
+                  <td>
+                    <div className="table-actions">
+                      <button
+                        type="button"
+                        className="btn-icon btn-icon-edit"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/countries/${country.country_code}/edit`);
+                        }}
+                        aria-label="Edit country"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-icon btn-icon-delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(country);
+                        }}
+                        aria-label="Delete country"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))
           )}

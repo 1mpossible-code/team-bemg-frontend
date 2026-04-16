@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { getCities, deleteCity } from '../api';
+import { getCities, deleteCity, getStoredAccessTokenRole } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue, formatPopulationSummary } from '../utils/formatters';
@@ -36,6 +36,7 @@ const CityList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
   const location = useLocation();
+  const isAdmin = getStoredAccessTokenRole() === 'admin';
 
   const fetchData = useCallback((params = {}) => {
     setLoading(true);
@@ -301,14 +302,16 @@ const CityList = () => {
     <div className="container">
       <div className="list-header">
         <h2>Cities Dashboard</h2>
-        <button
-          type="button"
-          className="btn btn-primary btn-with-icon"
-          onClick={() => navigate('/cities/create')}
-        >
-          <Plus size={15} />
-          Create City
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            className="btn btn-primary btn-with-icon"
+            onClick={() => navigate('/cities/create')}
+          >
+            <Plus size={15} />
+            Create City
+          </button>
+        )}
       </div>
       <p className="endpoint-badge">
         Showing {cities.length} records from cities
@@ -413,7 +416,7 @@ const CityList = () => {
                 ) : null}
               </th>
             ))}
-            {cities.length > 0 && <th>Actions</th>}
+            {cities.length > 0 && isAdmin && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -429,32 +432,34 @@ const CityList = () => {
                 {attributes.map((attribute) => (
                   <td key={attribute}>{formatCellValue(city[attribute], attribute)}</td>
                 ))}
-                <td>
-                  <div className="table-actions">
-                    <button
-                      type="button"
-                      className="btn-icon btn-icon-edit"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/cities/${city.state_code}/${city.city_name}/edit`);
-                      }}
-                      aria-label="Edit city"
-                    >
-                      <Pencil size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-icon btn-icon-delete"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(city);
-                      }}
-                      aria-label="Delete city"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </td>
+                {isAdmin && (
+                  <td>
+                    <div className="table-actions">
+                      <button
+                        type="button"
+                        className="btn-icon btn-icon-edit"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/cities/${city.state_code}/${city.city_name}/edit`);
+                        }}
+                        aria-label="Edit city"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-icon btn-icon-delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(city);
+                        }}
+                        aria-label="Delete city"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))
           )}

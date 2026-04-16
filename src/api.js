@@ -18,6 +18,32 @@ export const applyAccessToken = (token) => {
 
 export const getStoredAccessToken = () => window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
 
+const decodeBase64Url = (value) => {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+  const padLength = (4 - (normalized.length % 4)) % 4;
+  const padded = `${normalized}${'='.repeat(padLength)}`;
+  return window.atob(padded);
+};
+
+export const getStoredAccessTokenRole = () => {
+  const token = getStoredAccessToken();
+  if (!token) {
+    return null;
+  }
+
+  const parts = token.split('.');
+  if (parts.length < 2 || !parts[1]) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(decodeBase64Url(parts[1]));
+    return typeof payload.role === 'string' ? payload.role : null;
+  } catch {
+    return null;
+  }
+};
+
 export const storeAccessToken = (token) => {
   window.localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, token);
   applyAccessToken(token);

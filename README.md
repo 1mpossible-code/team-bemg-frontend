@@ -9,6 +9,7 @@ A React-based frontend for the Geographic Database API, providing an intuitive i
 - **Statistics**: Real-time aggregate metrics including total counts and populations
 - **Responsive Design**: Clean, modern UI that works on all devices
 - **Error Handling**: Graceful error states with retry functionality
+- **Role-aware UI controls**: Create/Edit/Delete actions are shown only for `admin` role tokens
 
 ## Technology Stack
 
@@ -78,6 +79,34 @@ REACT_APP_API_BASE_URL=https://your-api.example.com
 **Countries**: Name search, continent selector, population range  
 **States**: Name search, country code, population range  
 **Cities**: Name search, country/state codes, population range
+
+## Role-Based Access Testing (Frontend)
+
+This frontend reads the role claim from the access token in local storage and hides mutation controls for non-admin users:
+
+- `admin` role: Create/Edit/Delete controls are visible on Countries/States/Cities list views.
+- non-admin or missing role: list views stay readable, but Create/Edit/Delete controls are hidden.
+
+Important: this is UI-level gating for UX. Backend authorization must still enforce access.
+
+### Generate local dev tokens
+
+From this frontend folder:
+
+```bash
+npm run token:admin
+npm run token:user
+npm run token:clear
+```
+
+These commands print copy/paste snippets for browser DevTools.
+
+### Apply token in browser
+
+1. Open your app in the browser.
+2. Open DevTools Console.
+3. Run the printed `localStorage.setItem(...)` command.
+4. Reload the page.
 
 ## Test Files
 

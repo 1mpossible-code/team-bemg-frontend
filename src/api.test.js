@@ -27,6 +27,7 @@ import {
   getStateDeleteImpact,
   getStates,
   getCities,
+  getStoredAccessTokenRole,
   getStoredAccessToken,
   storeAccessToken
 } from './api';
@@ -64,6 +65,20 @@ describe('api', () => {
     applyAccessToken(null);
 
     expect(mockClient.defaults.headers.common.Authorization).toBeUndefined();
+  });
+
+  test('getStoredAccessTokenRole returns role from token payload', () => {
+    const payload = window.btoa(JSON.stringify({ role: 'admin' }));
+    const token = `header.${payload}.signature`;
+    storeAccessToken(token);
+
+    expect(getStoredAccessTokenRole()).toBe('admin');
+  });
+
+  test('getStoredAccessTokenRole returns null for malformed token payload', () => {
+    storeAccessToken('bad-token');
+
+    expect(getStoredAccessTokenRole()).toBeNull();
   });
 
   test('getCountries calls /countries', () => {

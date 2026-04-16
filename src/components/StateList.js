@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { getStates, deleteState, getStateDeleteImpact } from '../api';
+import { getStates, deleteState, getStateDeleteImpact, getStoredAccessTokenRole } from '../api';
 import { normalizeQueryParams } from '../utils/query';
 import { buildSearchFromFilters, parseFiltersFromSearch } from '../utils/urlFilters';
 import { formatCellValue, formatPopulationSummary } from '../utils/formatters';
@@ -44,6 +44,7 @@ const StateList = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const navigate = useNavigate();
   const location = useLocation();
+  const isAdmin = getStoredAccessTokenRole() === 'admin';
 
   const fetchData = useCallback((params = {}) => {
     setLoading(true);
@@ -230,14 +231,16 @@ const StateList = () => {
     <div className="container">
       <div className="list-header">
         <h2>States Dashboard</h2>
-        <button
-          type="button"
-          className="btn btn-primary btn-with-icon"
-          onClick={() => navigate('/states/create')}
-        >
-          <Plus size={15} />
-          Create State
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            className="btn btn-primary btn-with-icon"
+            onClick={() => navigate('/states/create')}
+          >
+            <Plus size={15} />
+            Create State
+          </button>
+        )}
       </div>
       <p className="endpoint-badge">
         Showing {states.length} records from states
@@ -278,7 +281,7 @@ const StateList = () => {
                 ) : null}
               </th>
             ))}
-            {states.length > 0 && <th>Actions</th>}
+            {states.length > 0 && isAdmin && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -298,32 +301,34 @@ const StateList = () => {
                 {attributes.map((attribute) => (
                   <td key={attribute}>{formatCellValue(state[attribute], attribute)}</td>
                 ))}
-                <td>
-                  <div className="table-actions">
-                    <button
-                      type="button"
-                      className="btn-icon btn-icon-edit"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/states/${state.state_code}/edit`);
-                      }}
-                      aria-label="Edit state"
-                    >
-                      <Pencil size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-icon btn-icon-delete"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(state);
-                      }}
-                      aria-label="Delete state"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </td>
+                {isAdmin && (
+                  <td>
+                    <div className="table-actions">
+                      <button
+                        type="button"
+                        className="btn-icon btn-icon-edit"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/states/${state.state_code}/edit`);
+                        }}
+                        aria-label="Edit state"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-icon btn-icon-delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(state);
+                        }}
+                        aria-label="Delete state"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))
           )}

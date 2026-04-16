@@ -20,6 +20,7 @@ const mockCountries = [
 beforeEach(() => {
   api.getCountries.mockResolvedValue({ data: mockCountries });
   api.getContinents.mockResolvedValue({ data: [] });
+  api.getStoredAccessTokenRole.mockReturnValue('admin');
   api.getCountryDeleteImpact.mockResolvedValue({
     data: {
       states: 2,
@@ -115,4 +116,17 @@ test('confirms deletion with a single cascade delete request', async () => {
     expect(api.deleteCountry).toHaveBeenCalledWith('US', { cascade: true });
   });
   expect(api.getCountries).toHaveBeenCalledTimes(2);
+});
+
+test('hides country mutation controls for non-admin users', async () => {
+  api.getStoredAccessTokenRole.mockReturnValue('user');
+  await renderCountryList();
+
+  await waitFor(() => {
+    expect(screen.getByText(/Countries Dashboard/i)).toBeInTheDocument();
+  });
+
+  expect(screen.queryByRole('button', { name: /Create Country/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Edit country/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Delete country/i })).not.toBeInTheDocument();
 });
