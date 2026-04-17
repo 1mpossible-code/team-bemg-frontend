@@ -14,6 +14,7 @@ import EditCountryForm from './components/EditCountryForm';
 import EditStateForm from './components/EditStateForm';
 import EditCityForm from './components/EditCityForm';
 import ErrorBoundary from './components/ErrorBoundary';
+import DevLogsPage from './components/DevLogsPage';
 
 const THEME_KEY = 'team-bemg-theme';
 
@@ -75,6 +76,7 @@ function App() {
               <Route path="/cities/create" element={<CreateCityForm />} />
               <Route path="/cities/:stateCode/:cityName/edit" element={<EditCityForm />} />
               <Route path="/countries/:countryCode/edit" element={<EditCountryForm />} />
+              <Route path="/dev/logs" element={<DevLogsPage />} />
             </Routes>
           </ErrorBoundary>
         </main>

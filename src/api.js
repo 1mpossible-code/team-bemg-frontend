@@ -56,6 +56,12 @@ export const clearAccessToken = () => {
 
 applyAccessToken(getStoredAccessToken());
 
+export const getDevLogs = (limit, token) =>
+  API.get('/dev/logs', {
+    params: { limit },
+    headers: { 'X-Dev-Token': token },
+  });
+
 // Continents API
 export const getContinents = () => API.get('/continents');
 
