@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { getDevLogs } from '../api';
 
 const DEV_LOGS_TOKEN_KEY = 'team-bemg-dev-logs-token';
@@ -11,7 +11,7 @@ const DevLogsPage = () => {
   const [error, setError] = useState('');
   const [autoRefresh, setAutoRefresh] = useState(true);
 
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     if (!token.trim()) {
       setError('Developer token is required');
       setLogs([]);
@@ -31,20 +31,21 @@ const DevLogsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, limit]);
 
   useEffect(() => {
     loadLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (!autoRefresh || !token.trim()) {
+    if (!autoRefresh) {
       return undefined;
     }
 
     const intervalId = window.setInterval(loadLogs, 5000);
     return () => window.clearInterval(intervalId);
-  }, [autoRefresh, token, limit]);
+  }, [autoRefresh, loadLogs]);
 
   return (
     <div className="container">
