@@ -115,7 +115,7 @@ const DevLogsPage = () => {
             </tr>
           ) : (
             logs.map((entry, index) => (
-              <tr key={`${entry.timestamp}-${index}`}>
+              <tr key={`${entry.timestamp}-${index}`} className={`log-${entry.level?.toLowerCase().replace('warning', 'warn')}`}>
                 <td>{entry.timestamp}</td>
                 <td>{entry.level}</td>
                 <td>{entry.logger}</td>

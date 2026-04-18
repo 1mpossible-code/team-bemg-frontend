@@ -250,6 +250,37 @@ h2 {
   transition: background-color 0.15s ease;
 }
 
+.data-table tbody tr.log-error {
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
+.data-table tbody tr.log-warn {
+  background-color: #fffbeb;
+  color: #92400e;
+}
+
+.data-table tbody tr.log-debug {
+  color: var(--text-muted);
+}
+
+.data-table tbody tr.log-critical {
+  background-color: #450a0a;
+  color: #fecaca;
+}
+
+.data-table tbody tr.log-error:hover {
+  background-color: #fecaca;
+}
+
+.data-table tbody tr.log-warn:hover {
+  background-color: #fde68a;
+}
+
+.data-table tbody tr.log-critical:hover {
+  background-color: #7f1d1d;
+}
+
 .data-table tbody tr:last-child td {
   border-bottom: none;
 }
