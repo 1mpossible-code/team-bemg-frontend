@@ -30,6 +30,7 @@ const mockCities = [
 
 beforeEach(() => {
   window.localStorage.clear();
+  document.documentElement.classList.remove('dark');
   api.getCountries.mockImplementation(() => new Promise(() => {}));
   api.getStates.mockImplementation(() => new Promise(() => {}));
   api.getCities.mockImplementation(() => new Promise(() => {}));
@@ -70,6 +71,56 @@ test('toggles light and dark mode', async () => {
 
   expect(document.documentElement).toHaveClass('dark');
   expect(window.localStorage.getItem('team-bemg-theme')).toBe('dark');
+});
+
+test('restores the saved theme from localStorage on load', async () => {
+  window.localStorage.setItem('team-bemg-theme', 'dark');
+
+  await renderApp();
+
+  await waitFor(() => {
+    expect(document.documentElement).toHaveClass('dark');
+  });
+  expect(screen.getByRole('button', { name: /switch to light mode/i })).toBeInTheDocument();
+});
+
+test('uses the preferred color scheme when there is no saved theme', async () => {
+  const previousMatchMedia = window.matchMedia;
+
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    configurable: true,
+    value: jest.fn().mockImplementation((query) => ({
+      matches: query === '(prefers-color-scheme: dark)',
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
+
+  try {
+    await renderApp();
+
+    await waitFor(() => {
+      expect(document.documentElement).toHaveClass('dark');
+    });
+    expect(window.localStorage.getItem('team-bemg-theme')).toBe('dark');
+    expect(screen.getByRole('button', { name: /switch to light mode/i })).toBeInTheDocument();
+  } finally {
+    if (previousMatchMedia) {
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        configurable: true,
+        value: previousMatchMedia,
+      });
+    } else {
+      delete window.matchMedia;
+    }
+  }
 });
 
 test('navigates to Countries and shows dashboard', async () => {
