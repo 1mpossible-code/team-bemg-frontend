@@ -17,10 +17,25 @@ const CreateStateForm = () => {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [countriesLoading, setCountriesLoading] = useState(true);
+  const [countriesError, setCountriesError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    getCountries().then(res => setCountries(res.data)).catch(console.error);
+    setCountriesLoading(true);
+    setCountriesError(null);
+
+    getCountries()
+      .then((res) => {
+        setCountries(res.data);
+      })
+      .catch((err) => {
+        setCountries([]);
+        setCountriesError(err.message || 'Failed to load countries');
+      })
+      .finally(() => {
+        setCountriesLoading(false);
+      });
   }, []);
 
   const validate = () => {
@@ -144,14 +159,27 @@ const CreateStateForm = () => {
             value={form.country_code}
             onChange={handleChange}
             aria-invalid={!!errors.country_code}
+            aria-describedby={countriesError ? 'country_code-load-error' : undefined}
+            disabled={countriesLoading || !!countriesError}
           >
-            <option value="">Select a Country</option>
+            <option value="">
+              {countriesLoading
+                ? 'Loading countries...'
+                : countriesError
+                  ? 'Countries unavailable'
+                  : 'Select a Country'}
+            </option>
             {countries.map(c => (
               <option key={c.country_code} value={c.country_code}>
                 {c.country_name} ({c.country_code})
               </option>
             ))}
           </select>
+          {countriesError && (
+            <p id="country_code-load-error" className="field-error">
+              Failed to load countries. Please refresh and try again.
+            </p>
+          )}
           {errors.country_code && <p className="field-error">{errors.country_code}</p>}
         </div>
 

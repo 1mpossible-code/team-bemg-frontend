@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { createCity, getCountries, getStates } from '../api';
 
@@ -15,16 +15,44 @@ const initialForm = {
 const CreateCityForm = () => {
   const [form, setForm] = useState(initialForm);
   const [countries, setCountries] = useState([]);
-  const [allStates, setAllStates] = useState([]);
+  const [states, setStates] = useState([]);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const latestStatesRequestRef = useRef(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     getCountries().then(res => setCountries(res.data)).catch(console.error);
-    getStates().then(res => setAllStates(res.data)).catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (!form.country_code) {
+      latestStatesRequestRef.current += 1;
+      setStates([]);
+      return;
+    }
+
+    const requestId = latestStatesRequestRef.current + 1;
+    latestStatesRequestRef.current = requestId;
+    const selectedCountryCode = form.country_code;
+
+    getStates({ country_code: selectedCountryCode })
+      .then((res) => {
+        if (latestStatesRequestRef.current !== requestId) {
+          return;
+        }
+
+        setStates(res.data);
+      })
+      .catch((err) => {
+        if (latestStatesRequestRef.current !== requestId) {
+          return;
+        }
+
+        console.error(err);
+      });
+  }, [form.country_code]);
 
   const validate = () => {
     const newErrors = {};
@@ -61,13 +89,28 @@ const CreateCityForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+
+    setForm((prev) => {
+      if (name === 'country_code') {
+        return {
+          ...prev,
+          country_code: value,
+          state_code: '',
+        };
+      }
+
+      return { ...prev, [name]: value };
+    });
 
     setErrors((prev) => {
-      if (!prev[name]) return prev;
-      const copy = { ...prev };
-      delete copy[name];
-      return copy;
+      const nextErrors = { ...prev };
+      delete nextErrors[name];
+
+      if (name === 'country_code') {
+        delete nextErrors.state_code;
+      }
+
+      return nextErrors;
     });
   };
 
@@ -160,16 +203,14 @@ const CreateCityForm = () => {
             value={form.state_code}
             onChange={handleChange}
             aria-invalid={!!errors.state_code}
-            disabled={!form.country_code} // Disable until country is picked
+            disabled={!form.country_code}
           >
             <option value="">Select a State</option>
-            {allStates
-              .filter(s => s.country_code === form.country_code) 
-              .map(s => (
-                <option key={s.state_code} value={s.state_code}>
-                  {s.state_name} ({s.state_code})
-                </option>
-              ))}
+            {states.map(s => (
+              <option key={s.state_code} value={s.state_code}>
+                {s.state_name} ({s.state_code})
+              </option>
+            ))}
           </select>
           {errors.state_code && <p className="field-error">{errors.state_code}</p>}
         </div>
