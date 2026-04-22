@@ -44,6 +44,34 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+test('shows countries in the dropdown after they load', async () => {
+  render(<CreateCityForm />);
+
+  const countrySelect = screen.getByLabelText(/Country/i);
+
+  expect(countrySelect).toBeDisabled();
+  expect(screen.getByRole('option', { name: /Loading countries/i })).toBeInTheDocument();
+
+  await waitFor(() => expect(api.getCountries).toHaveBeenCalled());
+  await waitFor(() => expect(countrySelect).not.toBeDisabled());
+
+  expect(screen.getByRole('option', { name: /United States \(US\)/i })).toBeInTheDocument();
+  expect(screen.getByRole('option', { name: /Canada \(CA\)/i })).toBeInTheDocument();
+});
+
+test('shows a user-visible error when countries fail to load', async () => {
+  api.getCountries.mockRejectedValue(new Error('Network down'));
+
+  render(<CreateCityForm />);
+
+  expect(await screen.findByText(/Failed to load countries\. Please refresh and try again\./i)).toBeInTheDocument();
+
+  const countrySelect = screen.getByLabelText(/Country/i);
+  expect(countrySelect).toBeDisabled();
+  expect(screen.getByRole('option', { name: /Countries unavailable/i })).toBeInTheDocument();
+  expect(api.getStates).not.toHaveBeenCalled();
+});
+
 test('rejects invalid coordinates before submission', async () => {
   render(<CreateCityForm />);
 
@@ -107,6 +135,60 @@ test('clears selected state and replaces options when country changes', async ()
   });
   expect(await screen.findByRole('option', { name: /Ontario/i })).toBeInTheDocument();
   expect(screen.queryByRole('option', { name: /California/i })).not.toBeInTheDocument();
+});
+
+test('clears state options and disables the state dropdown when country selection is reset', async () => {
+  api.getStates.mockResolvedValueOnce({
+    data: [{ state_code: 'CA', state_name: 'California', country_code: 'US' }],
+  });
+
+  render(<CreateCityForm />);
+
+  const countrySelect = screen.getByLabelText(/Country/i);
+  const stateSelect = screen.getByLabelText(/State/i);
+
+  await screen.findByRole('option', { name: /United States/i });
+  await userEvent.selectOptions(countrySelect, 'US');
+  await userEvent.selectOptions(stateSelect, await screen.findByRole('option', { name: /California/i }));
+
+  expect(stateSelect).toHaveValue('CA');
+  expect(stateSelect).toBeEnabled();
+
+  await userEvent.selectOptions(countrySelect, '');
+
+  await waitFor(() => {
+    expect(stateSelect).toHaveValue('');
+    expect(stateSelect).toBeDisabled();
+  });
+  expect(screen.queryByRole('option', { name: /California/i })).not.toBeInTheDocument();
+  expect(api.getStates).toHaveBeenCalledTimes(1);
+});
+
+test('requires choosing a new state after the country changes', async () => {
+  api.getStates
+    .mockResolvedValueOnce({ data: [{ state_code: 'TX', state_name: 'Texas', country_code: 'US' }] })
+    .mockResolvedValueOnce({ data: [{ state_code: 'ON', state_name: 'Ontario', country_code: 'CA' }] });
+
+  render(<CreateCityForm />);
+
+  await userEvent.type(screen.getByLabelText(/City Name/i), 'Toronto');
+
+  const countrySelect = screen.getByLabelText(/Country/i);
+  const stateSelect = screen.getByLabelText(/State/i);
+
+  await screen.findByRole('option', { name: /United States/i });
+  await userEvent.selectOptions(countrySelect, 'US');
+  await userEvent.selectOptions(stateSelect, await screen.findByRole('option', { name: /Texas/i }));
+  await userEvent.selectOptions(countrySelect, 'CA');
+
+  await userEvent.type(screen.getByLabelText(/Population/i), '2930000');
+  await userEvent.type(screen.getByLabelText(/Area \(km²\)/i), '630.2');
+  await userEvent.type(screen.getByLabelText(/Latitude/i), '43.6532');
+  await userEvent.type(screen.getByLabelText(/Longitude/i), '-79.3832');
+  await userEvent.click(screen.getByRole('button', { name: /Create City/i }));
+
+  expect(await screen.findByText(/State code is required/i)).toBeInTheDocument();
+  expect(api.createCity).not.toHaveBeenCalled();
 });
 
 test('submits the selected country_code and refreshed state_code after country changes', async () => {
@@ -216,4 +298,17 @@ test('submits nested city coordinates and redirects', async () => {
   await waitFor(() => {
     expect(mockNavigate).toHaveBeenCalledWith('/cities');
   });
+});
+
+test('shows the API error without navigating away when city creation fails', async () => {
+  api.createCity.mockRejectedValue({ response: { data: { message: 'City already exists' } } });
+
+  render(<CreateCityForm />);
+
+  await fillValidForm();
+  await userEvent.click(screen.getByRole('button', { name: /Create City/i }));
+
+  expect(await screen.findByText(/City already exists/i)).toBeInTheDocument();
+  expect(mockNavigate).not.toHaveBeenCalled();
+  expect(screen.getByRole('button', { name: /Create City/i })).toBeEnabled();
 });
