@@ -1,3 +1,20 @@
+import axios from 'axios';
+import {
+  ACCESS_TOKEN_STORAGE_KEY,
+  applyAccessToken,
+  clearAccessToken,
+  deleteCountry,
+  deleteState,
+  getCountries,
+  getCountryDeleteImpact,
+  getStateDeleteImpact,
+  getStates,
+  getCities,
+  getStoredAccessTokenRole,
+  getStoredAccessToken,
+  storeAccessToken
+} from './api';
+
 jest.mock('axios', () => {
   const mockGet = jest.fn().mockResolvedValue({ data: [] });
   const mockDelete = jest.fn().mockResolvedValue({ data: {} });
@@ -15,22 +32,6 @@ jest.mock('axios', () => {
   return mock;
 });
 
-import axios from 'axios';
-import {
-  ACCESS_TOKEN_STORAGE_KEY,
-  applyAccessToken,
-  clearAccessToken,
-  deleteCountry,
-  deleteState,
-  getCountries,
-  getCountryDeleteImpact,
-  getStateDeleteImpact,
-  getStates,
-  getCities,
-  getStoredAccessTokenRole,
-  getStoredAccessToken,
-  storeAccessToken
-} from './api';
 
 const mockGet = axios.__mockGet;
 const mockDelete = axios.__mockDelete;

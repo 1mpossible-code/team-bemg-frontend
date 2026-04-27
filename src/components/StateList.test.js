@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import StateList from './StateList';
 import * as api from '../api';
@@ -36,22 +36,17 @@ beforeEach(() => {
   mockLocation.search = '';
 });
 
-afterEach(async () => {
-  await act(async () => {
-    await Promise.resolve();
-  });
+afterEach(() => {
   jest.clearAllMocks();
 });
 
-const renderStateList = async () => {
-  await act(async () => {
-    render(<StateList />);
-  });
+const renderStateList = () => {
+  render(<StateList />);
 };
 
 test('shows loading state initially', async () => {
   api.getStates.mockImplementation(() => new Promise(() => {}));
-  await renderStateList();
+  renderStateList();
   expect(screen.getByText(/Loading states/i)).toBeInTheDocument();
 });
 
@@ -60,7 +55,7 @@ test('shows error state and retries fetch', async () => {
     .mockRejectedValueOnce(new Error('Network error'))
     .mockResolvedValueOnce({ data: mockStates });
 
-  await renderStateList();
+  renderStateList();
 
   expect(await screen.findByText(/Error:/i)).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: /Retry/i }));
@@ -75,7 +70,7 @@ test('shows error state and retries fetch', async () => {
 test('uses query string filters on initial load', async () => {
   mockLocation.search = '?country_code=US&min_population=100000&state_name=Cal';
 
-  await renderStateList();
+  renderStateList();
 
   await waitFor(() => {
     expect(api.getStates).toHaveBeenCalledWith({
@@ -89,7 +84,7 @@ test('uses query string filters on initial load', async () => {
 });
 
 test('searches with filters and clears query state', async () => {
-  await renderStateList();
+  renderStateList();
 
   await screen.findByText(/^States Dashboard$/i);
 
@@ -111,16 +106,18 @@ test('searches with filters and clears query state', async () => {
 });
 
 test('clicking a state row navigates to cities filtered by state code', async () => {
-  await renderStateList();
+  renderStateList();
 
-  const stateCell = await screen.findByText(/California/i);
-  await userEvent.click(stateCell.closest('tr'));
+  await screen.findByText(/California/i);
+  const [headerRow, firstDataRow] = screen.getAllByRole('row');
+  expect(headerRow).toBeInTheDocument();
+  await userEvent.click(firstDataRow);
 
   expect(mockNavigate).toHaveBeenCalledWith('/cities?state_code=CA');
 });
 
 test('clicking edit navigates to the state edit page', async () => {
-  await renderStateList();
+  renderStateList();
 
   const editButtons = await screen.findAllByRole('button', { name: /Edit state/i });
   await userEvent.click(editButtons[0]);
@@ -135,7 +132,7 @@ test('loads delete impact preview and performs cascade state delete', async () =
   api.deleteState.mockResolvedValue({});
   api.getStates.mockResolvedValueOnce({ data: mockStates }).mockResolvedValueOnce({ data: [mockStates[1]] });
 
-  await renderStateList();
+  renderStateList();
 
   const deleteButtons = await screen.findAllByRole('button', { name: /Delete state/i });
   await userEvent.click(deleteButtons[0]);
@@ -160,7 +157,7 @@ test('shows zero-city delete impact preview when no dependent cities exist', asy
     data: { cities: 0, direct_dependency_count: 0, total_dependency_count: 0 },
   });
 
-  await renderStateList();
+  renderStateList();
 
   const deleteButtons = await screen.findAllByRole('button', { name: /Delete state/i });
   await userEvent.click(deleteButtons[0]);
@@ -172,7 +169,7 @@ test('shows zero-city delete impact preview when no dependent cities exist', asy
 
 test('hides state mutation controls for non-admin users', async () => {
   api.getStoredAccessTokenRole.mockReturnValue('user');
-  await renderStateList();
+  renderStateList();
 
   await waitFor(() => {
     expect(screen.getByText(/^States Dashboard$/i)).toBeInTheDocument();

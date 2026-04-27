@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import * as api from './api';
@@ -37,34 +37,29 @@ beforeEach(() => {
   api.getContinents.mockResolvedValue({ data: [] });
 });
 
-afterEach(async () => {
-  await act(async () => {
-    await Promise.resolve();
-  });
+afterEach(() => {
   jest.clearAllMocks();
 });
 
-const renderApp = async () => {
-  await act(async () => {
-    render(<App />);
-  });
+const renderApp = () => {
+  render(<App />);
 };
 
 test('renders app title', async () => {
-  await renderApp();
+  renderApp();
   const heading = screen.getByText(/Geographic Database/i);
   expect(heading).toBeInTheDocument();
 });
 
 test('renders nav links', async () => {
-  await renderApp();
+  renderApp();
   expect(screen.getByRole('link', { name: /countries/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /states/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /cities/i })).toBeInTheDocument();
 });
 
 test('toggles light and dark mode', async () => {
-  await renderApp();
+  renderApp();
 
   const toggle = screen.getByRole('button', { name: /switch to dark mode/i });
   await userEvent.click(toggle);
@@ -76,7 +71,7 @@ test('toggles light and dark mode', async () => {
 test('restores the saved theme from localStorage on load', async () => {
   window.localStorage.setItem('team-bemg-theme', 'dark');
 
-  await renderApp();
+  renderApp();
 
   await waitFor(() => {
     expect(document.documentElement).toHaveClass('dark');
@@ -103,7 +98,7 @@ test('uses the preferred color scheme when there is no saved theme', async () =>
   });
 
   try {
-    await renderApp();
+    renderApp();
 
     await waitFor(() => {
       expect(document.documentElement).toHaveClass('dark');
@@ -125,7 +120,7 @@ test('uses the preferred color scheme when there is no saved theme', async () =>
 
 test('navigates to Countries and shows dashboard', async () => {
   api.getCountries.mockResolvedValue({ data: mockCountries });
-  await renderApp();
+  renderApp();
   await userEvent.click(screen.getByRole('link', { name: /countries/i }));
   await waitFor(() => {
     expect(screen.getByText(/^Countries Dashboard$/i)).toBeInTheDocument();
@@ -134,7 +129,7 @@ test('navigates to Countries and shows dashboard', async () => {
 
 test('navigates to States and shows list', async () => {
   api.getStates.mockResolvedValue({ data: mockStates });
-  await renderApp();
+  renderApp();
   await userEvent.click(screen.getByRole('link', { name: /states/i }));
   await waitFor(() => {
     expect(screen.getByText(/^States Dashboard$/i)).toBeInTheDocument();
@@ -143,7 +138,7 @@ test('navigates to States and shows list', async () => {
 
 test('navigates to Cities and shows list', async () => {
   api.getCities.mockResolvedValue({ data: mockCities });
-  await renderApp();
+  renderApp();
   await userEvent.click(screen.getByRole('link', { name: /cities/i }));
   await waitFor(() => {
     expect(screen.getByText(/^Cities Dashboard$/i)).toBeInTheDocument();

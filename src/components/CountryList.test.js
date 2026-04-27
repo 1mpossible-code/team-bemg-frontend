@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CountryList from './CountryList';
 import * as api from '../api';
@@ -37,24 +37,20 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-const renderCountryList = async () => {
-  await act(async () => {
-    render(
-      <CountryList />
-    );
-  });
+const renderCountryList = () => {
+  render(<CountryList />);
 };
 
 test('shows loading state initially', async () => {
   api.getCountries.mockImplementation(() => new Promise(() => {}));
-  await renderCountryList();
+  renderCountryList();
   expect(screen.getByText(/Loading countries/i)).toBeInTheDocument();
 });
 
 test('shows error state when fetch fails', async () => {
   api.getCountries.mockRejectedValue(new Error('Network error'));
 
-  await renderCountryList();
+  renderCountryList();
 
   await waitFor(() => {
     expect(screen.getByText(/Error:/i)).toBeInTheDocument();
@@ -63,7 +59,7 @@ test('shows error state when fetch fails', async () => {
 });
 
 test('renders country list when data loads', async () => {
-  await renderCountryList();
+  renderCountryList();
 
   await waitFor(() => {
     expect(screen.getByText(/Countries Dashboard/i)).toBeInTheDocument();
@@ -73,7 +69,7 @@ test('renders country list when data loads', async () => {
 });
 
 test('clicking edit navigates to the country edit page', async () => {
-  await renderCountryList();
+  renderCountryList();
 
   const editButtons = await screen.findAllByRole('button', { name: /Edit country/i });
   await userEvent.click(editButtons[0]);
@@ -82,7 +78,7 @@ test('clicking edit navigates to the country edit page', async () => {
 });
 
 test('shows delete impact preview when opening delete confirmation', async () => {
-  await renderCountryList();
+  renderCountryList();
 
   const deleteButtons = await screen.findAllByRole('button', { name: /Delete country/i });
   await userEvent.click(deleteButtons[0]);
@@ -101,7 +97,7 @@ test('shows delete impact preview when opening delete confirmation', async () =>
 });
 
 test('confirms deletion with a single cascade delete request', async () => {
-  await renderCountryList();
+  renderCountryList();
 
   const deleteButtons = await screen.findAllByRole('button', { name: /Delete country/i });
   await userEvent.click(deleteButtons[0]);
@@ -120,7 +116,7 @@ test('confirms deletion with a single cascade delete request', async () => {
 
 test('hides country mutation controls for non-admin users', async () => {
   api.getStoredAccessTokenRole.mockReturnValue('user');
-  await renderCountryList();
+  renderCountryList();
 
   await waitFor(() => {
     expect(screen.getByText(/Countries Dashboard/i)).toBeInTheDocument();

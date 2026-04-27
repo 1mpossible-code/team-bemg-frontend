@@ -1,6 +1,7 @@
-// Polyfill TextEncoder for react-router v7 under Jest
+import '@testing-library/jest-dom';
 import { TextEncoder } from 'util';
 
+// Polyfill TextEncoder for react-router v7 under Jest
 global.TextEncoder = TextEncoder;
 process.env.REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000';
 
@@ -16,6 +17,3 @@ console.error = (...args) => {
   }
   originalConsoleError(...args);
 };
-
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
-import '@testing-library/jest-dom';
