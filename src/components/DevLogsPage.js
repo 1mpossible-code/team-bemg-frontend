@@ -97,6 +97,14 @@ const DevLogsPage = () => {
           <span className="stat-label">Visible Logs</span>
           <span className="stat-value">{logs.length}</span>
         </div>
+        <div className="stat-card">
+          <span className="stat-label">Errors</span>
+          <span className="stat-value" style={{ color: '#991b1b' }}>{logs.filter((e) => e.level?.toUpperCase() === 'ERROR').length}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Criticals</span>
+          <span className="stat-value" style={{ color: '#7f1d1d' }}>{logs.filter((e) => e.level?.toUpperCase() === 'CRITICAL').length}</span>
+        </div>
       </div>
 
       <table className="data-table">
