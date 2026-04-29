@@ -387,6 +387,52 @@ h2 {
   border-color: var(--primary);
 }
 
+.filter-input-group:has(input[type="checkbox"]) {
+  justify-content: center;
+}
+
+.filter-input-group input[type="checkbox"] {
+  appearance: none;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--gray-medium);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.filter-input-group input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--white);
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.filter-input-group input[type="checkbox"]:checked {
+  background: var(--primary);
+}
+
+.filter-input-group input[type="checkbox"]:checked::after {
+  transform: translateX(20px);
+}
+
+.filter-input-group input[type="checkbox"]:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border: none;
+}
+
 .filter-actions {
   display: flex;
   gap: 12px;
