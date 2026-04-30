@@ -23,6 +23,18 @@ jobs:
       - name: Install dependencies
         run: make install
 
+      - name: Audit (report)
+        continue-on-error: true
+        run: |
+          npm audit --omit=dev --json > npm-audit.json
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit
+          path: npm-audit.json
+
       - name: Run tests
         run: make test
 
