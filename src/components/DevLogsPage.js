@@ -2,14 +2,23 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { getDevLogs } from '../api';
 
 const DEV_LOGS_TOKEN_KEY = 'team-bemg-dev-logs-token';
+const DEV_LOGS_LIMIT_KEY = 'team-bemg-dev-logs-limit';
+const DEV_LOGS_AUTO_REFRESH_KEY = 'team-bemg-dev-logs-auto-refresh';
+const DEFAULT_LOG_LIMIT = '50';
+
+const getStoredLogLimit = () =>
+  window.sessionStorage.getItem(DEV_LOGS_LIMIT_KEY) || DEFAULT_LOG_LIMIT;
+
+const getStoredAutoRefresh = () =>
+  window.sessionStorage.getItem(DEV_LOGS_AUTO_REFRESH_KEY) !== 'false';
 
 const DevLogsPage = () => {
   const [token, setToken] = useState(() => window.sessionStorage.getItem(DEV_LOGS_TOKEN_KEY) || '');
-  const [limit, setLimit] = useState('50');
+  const [limit, setLimit] = useState(getStoredLogLimit);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(getStoredAutoRefresh);
 
   const loadLogs = useCallback(async () => {
     if (!token.trim()) {
@@ -37,6 +46,17 @@ const DevLogsPage = () => {
     loadLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    window.sessionStorage.setItem(DEV_LOGS_LIMIT_KEY, limit);
+  }, [limit]);
+
+  useEffect(() => {
+    window.sessionStorage.setItem(
+      DEV_LOGS_AUTO_REFRESH_KEY,
+      String(autoRefresh)
+    );
+  }, [autoRefresh]);
 
   useEffect(() => {
     if (!autoRefresh) {
