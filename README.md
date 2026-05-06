@@ -10,6 +10,7 @@ A React-based frontend for the Geographic Database API, providing an intuitive i
 - **Responsive Design**: Clean, modern UI that works on all devices
 - **Error Handling**: Graceful error states with retry functionality
 - **Role-aware UI controls**: Create/Edit/Delete actions are shown only for `admin` role tokens
+- **Developer Logs Viewer**: Token-gated `/dev/logs` page with auto-refresh, level color-coding, and error/critical count cards (see [Developer Logs](#developer-logs))
 
 ## Technology Stack
 
@@ -80,6 +81,19 @@ REACT_APP_API_BASE_URL=https://your-api.example.com
 **States**: Name search, country code, population range  
 **Cities**: Name search, country/state codes, population range
 
+## Developer Logs
+
+The app exposes a developer-only log viewer at [`/dev/logs`](http://localhost:3000/dev/logs) that consumes the backend's `GET /dev/logs` endpoint.
+
+- **Auth**: paste the backend's `DEV_LOGS_TOKEN` into the *Developer Token* field. The token is held in `sessionStorage` for the tab and sent as the `X-Dev-Token` header on every request — it is never written to `localStorage` and never embedded in URLs.
+- **Limit**: choose how many recent records to fetch (`20`, `50`, `100`).
+- **Auto-refresh**: a styled toggle switch controls a 5-second polling loop. Disable it for static inspection.
+- **Stat cards**: at-a-glance counts of *Visible Logs*, *Errors*, and *Criticals* across the current view.
+- **Level color-coding**: each row is themed by the log level (`info`, `warn`, `error`, `critical`) via `log-<level>` CSS classes, so problems stand out without filtering.
+- **Empty state**: clear messaging for "no token entered" vs. "no logs available" so the page is never silently blank.
+
+The page does not appear in the main navigation; deep-link to `/dev/logs` to reach it. See the backend `README.md` for how to set `DEV_LOGS_TOKEN` and mint a token locally.
+
 ## Role-Based Access Testing (Frontend)
 
 This frontend reads the role claim from the access token in local storage and hides mutation controls for non-admin users:
@@ -116,15 +130,34 @@ Run all tests:
 npm test
 ```
 
-- `src/App.test.js`: Verifies top-level app behavior, including title rendering, nav links, and route navigation to Countries, States, and Cities views.
-- `src/components/CountryList.test.js`: Verifies country list states: loading, API error with retry UI, and successful country data rendering.
-- `src/components/StateList.test.js`: Verifies state list states, URL-query filter parsing, search/clear behavior, retry flow, and row click navigation to filtered cities.
-- `src/components/CityList.test.js`: Verifies city list states, URL-query filter parsing, search/clear behavior, retry flow, and stats/empty state rendering.
-- `src/components/CreateCountryForm.test.js`: Verifies validation, duplicate country code handling, timeout error messaging, and success redirect behavior.
-- `src/components/ErrorBoundary.test.js`: Verifies fallback UI is shown when a child component throws.
-- `src/api.test.js`: Verifies API helper functions call the expected endpoints (`/countries`, `/states`, `/cities`) with correct query params.
+### Top-level
 
-Test setup:
+- `src/App.test.js`: App shell — title, nav links, route navigation to Countries/States/Cities dashboards, theme toggle, and theme restoration from `localStorage` and `prefers-color-scheme`.
+- `src/api.test.js`: API client — token storage helpers (`storeAccessToken`, `clearAccessToken`, `applyAccessToken`), role extraction from JWT payload, and the country/state/city `get`/`delete` calls (including the cascade flag).
+- `src/ConfirmModal.test.js`: Open/close behavior, overlay click cancels, confirm/cancel callbacks, `confirmDisabled`, and the `Deleting...` in-progress state.
+
+### Components
+
+- `src/components/CountryList.test.js`: Loading, API error with retry UI, and successful country data rendering.
+- `src/components/StateList.test.js`: List states, URL-query filter parsing, search/clear, retry flow, and row-click navigation to filtered cities.
+- `src/components/CityList.test.js`: List states, URL-query filter parsing, search/clear, retry flow, and stats / empty-state rendering.
+- `src/components/CreateCountryForm.test.js`: Validation, duplicate country code handling, timeout error messaging, success redirect.
+- `src/components/CreateStateForm.test.js`: Validation, country selector population, error/success flows, and navigation back to the states list.
+- `src/components/CreateCityForm.test.js`: Validation, cascading country/state selectors, latitude/longitude inputs, submit loading feedback, and success redirect.
+- `src/components/EditCountryForm.test.js`: Preloads an existing country, validates dirty fields, submit success and error paths.
+- `src/components/EditStateForm.test.js`: Preloads an existing state, validates fields, submit success and error paths.
+- `src/components/EditCityForm.test.js`: Preloads an existing city (including coordinates), validates fields, submit success and error paths.
+- `src/components/ErrorBoundary.test.js`: Fallback UI is shown when a child component throws.
+- `src/components/FilterBar.test.js`: Renders text/number/select filters with the right types and default `All` option, propagates `(name, value)` changes, and wires Search/Clear buttons.
+- `src/components/Globe3D.test.js`: Fallback preview rendering in the test environment, marker count display, and custom `className` propagation to the fallback container.
+- `src/components/DevLogsPage.test.js`: Token-required validation, session-storage token restore on mount, refresh button calls `/dev/logs` with the configured limit, and 5-second auto-refresh polling that stops when the toggle is disabled.
+
+### Utilities
+
+- `src/utils/urlFilters.test.js`: `parseFiltersFromSearch` only reads known keys and preserves defaults; `buildSearchFromFilters` omits empty/null/undefined values and stringifies the rest.
+- `src/utils/query.test.js`: `normalizeQueryParams` drops empty/null/undefined values, coerces configured numeric keys (with whitespace handling), and preserves original strings on parse failure.
+
+### Test setup
 
 - `src/setupTests.js`: Loads `@testing-library/jest-dom`, applies a `TextEncoder` polyfill for router tests, and filters known React `act(...)` warning noise in test output.
 
