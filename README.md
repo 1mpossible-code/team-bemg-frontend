@@ -2,6 +2,30 @@
 
 A React-based frontend for the Geographic Database API, providing an intuitive interface to explore countries, states, and cities data.
 
+## Quick start (for graders)
+
+From this directory (`front/team-bemg-frontend`):
+
+```bash
+make install      # install npm dependencies
+make test         # run the full Jest suite once (CI=true, exits non-zero on failure)
+make build        # produce a production build in build/
+```
+
+Or, without Make:
+
+```bash
+npm install
+CI=true npm test
+npm run build
+```
+
+Notes:
+
+- The test suite is hermetic: every test file mocks `axios` or the local `../api` module (see `jest.mock(...)` calls), so the tests do **not** connect to a real backend, a real database, or the network. There are no DB-state assumptions to worry about.
+- `make test` sets `CI=true`, which makes Jest run once and exit with a non-zero status if any test fails. The GitHub Actions workflow (`.github/workflows/ci.yml`) uses the same command, and the `build` job declares `needs: test`, so any failing test blocks the build.
+- Expected output: `Test Suites: 18 passed, 18 total` and `Tests: 114 passed, 114 total` (counts may grow as the suite is extended).
+
 ## Features
 
 - **Multiple Dashboards**: Browse countries, states, and cities with comprehensive data views
