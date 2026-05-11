@@ -47,7 +47,7 @@ const renderApp = () => {
 
 test('renders app title', async () => {
   renderApp();
-  const heading = screen.getByText(/Geographic Database/i);
+  const heading = screen.getByText(/Team BEMG/i);
   expect(heading).toBeInTheDocument();
 });
 

@@ -97,6 +97,17 @@ body {
   letter-spacing: -0.025em;
 }
 
+.brand-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-heading svg {
+  color: var(--accent-warm);
+  flex-shrink: 0;
+}
+
 .theme-toggle {
   display: inline-flex;
   align-items: center;

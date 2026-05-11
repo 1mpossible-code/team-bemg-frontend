@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router';
-import { MoonStar, SunMedium } from 'lucide-react';
+import { Globe2, MoonStar, SunMedium } from 'lucide-react';
 import './App.css';
 
 
@@ -45,7 +45,10 @@ function App() {
         <nav className="navbar">
           <div className="navbar-shell">
             <div className="navbar-branding">
-              <h1>Geographic Database</h1>
+              <h1 className="brand-heading">
+                <Globe2 size={24} aria-hidden="true" />
+                <span>Team BEMG</span>
+              </h1>
               <ul>
                 <li><NavLink to="/" end>Countries</NavLink></li>
                 <li><NavLink to="/states">States</NavLink></li>
